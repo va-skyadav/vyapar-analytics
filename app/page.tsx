@@ -1,5 +1,3 @@
-"use server";
-
 import { redirect } from "next/navigation";
 import { BarChart3, Calculator, Boxes, Users, ReceiptText, BrainCircuit, Plus, Upload, LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
