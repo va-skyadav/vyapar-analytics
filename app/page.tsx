@@ -1,8 +1,8 @@
-"use client";
+"use server";
 
-import { useEffect, useState } from "react";
+import { redirect } from "next/navigation";
 import { BarChart3, Calculator, Boxes, Users, ReceiptText, BrainCircuit, Plus, Upload, LogOut } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/supabase/server";
 
 const modules = [
   { label: "Analytics", icon: BarChart3, active: true },
@@ -15,53 +15,35 @@ const modules = [
 
 const metrics = ["Sales", "Revenue", "Gross Profit", "Expenses", "Cash", "Receivables", "Payables", "Inventory Value"];
 
-export default function Dashboard() {
-  const supabase = createClient();
-  const [businessName, setBusinessName] = useState("");
-  const [loading, setLoading] = useState(true);
+export default async function Dashboard() {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
 
-  useEffect(() => {
-    async function loadWorkspace() {
-      const { data: { user } } = await supabase.auth.getUser();
+  if (!claimsData?.claims) {
+    redirect("/login");
+  }
 
-      if (!user) {
-        window.location.assign("/login");
-        return;
-      }
+  const userId = claimsData.claims.sub as string;
+  const { data: membership } = await supabase
+    .from("business_members")
+    .select("business_id")
+    .eq("user_id", userId)
+    .eq("status", "active")
+    .limit(1)
+    .maybeSingle();
 
-      const { data: membership, error } = await supabase
-        .from("business_members")
-        .select("business_id")
-        .eq("user_id", user.id)
-        .eq("status", "active")
-        .limit(1)
-        .maybeSingle();
+  if (!membership?.business_id) {
+    redirect("/create-business");
+  }
 
-      if (error || !membership?.business_id) {
-        window.location.assign("/create-business");
-        return;
-      }
+  const { data: business } = await supabase
+    .from("businesses")
+    .select("name")
+    .eq("id", membership.business_id)
+    .single();
 
-      const { data: business } = await supabase
-        .from("businesses")
-        .select("name")
-        .eq("id", membership.business_id)
-        .single();
-
-      if (!business) {
-        window.location.assign("/create-business");
-        return;
-      }
-
-      setBusinessName(business.name);
-      setLoading(false);
-    }
-
-    loadWorkspace();
-  }, [supabase]);
-
-  if (loading) {
-    return <main className="authPage"><section className="authCard"><p className="authIntro">Loading workspace...</p></section></main>;
+  if (!business) {
+    redirect("/create-business");
   }
 
   return (
@@ -83,7 +65,7 @@ export default function Dashboard() {
         <header className="topbar">
           <h1>Analytics</h1>
           <div className="topbarRight">
-            <div className="business">Business: <strong>{businessName}</strong></div>
+            <div className="business">Business: <strong>{business.name}</strong></div>
             <form action="/auth/signout" method="post">
               <button className="signoutButton" type="submit" title="Sign out"><LogOut size={16} /></button>
             </form>
@@ -118,8 +100,8 @@ export default function Dashboard() {
               <h3>No business data yet</h3>
               <p>Start recording transactions. Analytics will calculate these metrics from the underlying database—no sample or fabricated numbers are shown.</p>
               <div className="actions">
-                <button className="action primary" onClick={() => window.location.assign("/create-business")}><Plus size={15} /> Business settings</button>
-                <button className="action"><Upload size={15} /> Import data</button>
+                <a className="action primary" href="/create-business"><Plus size={15} /> Business settings</a>
+                <button className="action" type="button"><Upload size={15} /> Import data</button>
               </div>
             </div>
           </div>
