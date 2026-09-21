@@ -1,6 +1,8 @@
 "use client";
 
-import { BarChart3, Calculator, Boxes, Users, ReceiptText, BrainCircuit, Plus, Upload } from "lucide-react";
+import { useEffect, useState } from "react";
+import { BarChart3, Calculator, Boxes, Users, ReceiptText, BrainCircuit, Plus, Upload, LogOut } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 const modules = [
   { label: "Analytics", icon: BarChart3, active: true },
@@ -14,6 +16,54 @@ const modules = [
 const metrics = ["Sales", "Revenue", "Gross Profit", "Expenses", "Cash", "Receivables", "Payables", "Inventory Value"];
 
 export default function Dashboard() {
+  const supabase = createClient();
+  const [businessName, setBusinessName] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadWorkspace() {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        window.location.assign("/login");
+        return;
+      }
+
+      const { data: membership, error } = await supabase
+        .from("business_members")
+        .select("business_id")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .limit(1)
+        .maybeSingle();
+
+      if (error || !membership?.business_id) {
+        window.location.assign("/create-business");
+        return;
+      }
+
+      const { data: business } = await supabase
+        .from("businesses")
+        .select("name")
+        .eq("id", membership.business_id)
+        .single();
+
+      if (!business) {
+        window.location.assign("/create-business");
+        return;
+      }
+
+      setBusinessName(business.name);
+      setLoading(false);
+    }
+
+    loadWorkspace();
+  }, [supabase]);
+
+  if (loading) {
+    return <main className="authPage"><section className="authCard"><p className="authIntro">Loading workspace...</p></section></main>;
+  }
+
   return (
     <div className="dashboard">
       <aside className="sidebar">
@@ -32,7 +82,12 @@ export default function Dashboard() {
       <main className="main">
         <header className="topbar">
           <h1>Analytics</h1>
-          <div className="business">Business: <strong>Not configured</strong></div>
+          <div className="topbarRight">
+            <div className="business">Business: <strong>{businessName}</strong></div>
+            <form action="/auth/signout" method="post">
+              <button className="signoutButton" type="submit" title="Sign out"><LogOut size={16} /></button>
+            </form>
+          </div>
         </header>
 
         <section className="content">
@@ -61,9 +116,9 @@ export default function Dashboard() {
           <div className="card empty">
             <div>
               <h3>No business data yet</h3>
-              <p>Create your business and start recording transactions. Analytics will calculate these metrics from the underlying database—no sample or fabricated numbers are shown.</p>
+              <p>Start recording transactions. Analytics will calculate these metrics from the underlying database—no sample or fabricated numbers are shown.</p>
               <div className="actions">
-                <button className="action primary"><Plus size={15} /> Create business</button>
+                <button className="action primary" onClick={() => window.location.assign("/create-business")}><Plus size={15} /> Business settings</button>
                 <button className="action"><Upload size={15} /> Import data</button>
               </div>
             </div>
