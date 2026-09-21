@@ -10,7 +10,8 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
 body { background: var(--background); color: var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-button { font: inherit; }
+button, input, select { font: inherit; }
+a { color: inherit; }
 .dashboard { min-height: 100vh; display: flex; }
 .sidebar { width: 250px; background: #111827; color: white; padding: 24px 16px; display: flex; flex-direction: column; }
 .brand { padding: 0 12px 28px; font-size: 21px; font-weight: 750; letter-spacing: -.02em; }
@@ -22,7 +23,10 @@ button { font: inherit; }
 .main { flex: 1; min-width: 0; }
 .topbar { height: 72px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; }
 .topbar h1 { margin: 0; font-size: 20px; }
+.topbarRight { display: flex; align-items: center; gap: 14px; }
 .business { font-size: 13px; color: var(--muted); }
+.signoutButton { width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 8px; background: white; color: var(--muted); display: grid; place-items: center; cursor: pointer; }
+.signoutButton:hover { color: var(--text); border-color: #cbd5e1; }
 .content { padding: 30px 32px 48px; max-width: 1500px; }
 .headerRow { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; margin-bottom: 24px; }
 .headerRow h2 { margin: 0 0 6px; font-size: 28px; letter-spacing: -.03em; }
@@ -36,7 +40,28 @@ button { font: inherit; }
 .empty h3 { margin: 0 0 8px; font-size: 18px; }
 .empty p { margin: 0 auto 18px; max-width: 500px; color: var(--muted); line-height: 1.6; font-size: 14px; }
 .actions { display: flex; gap: 10px; justify-content: center; }
-.action { border: 1px solid var(--border); background: white; padding: 9px 14px; border-radius: 8px; cursor: pointer; }
+.action { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--border); background: white; padding: 9px 14px; border-radius: 8px; cursor: pointer; }
 .action.primary { background: var(--primary); border-color: var(--primary); color: white; }
+.authPage { min-height: 100vh; display: grid; place-items: center; padding: 24px; background: #f6f8fb; }
+.authCard { width: min(100%, 430px); background: white; border: 1px solid var(--border); border-radius: 16px; padding: 34px; box-shadow: 0 18px 50px rgba(15, 23, 42, .08); }
+.authWide { width: min(100%, 560px); }
+.authBrand { color: var(--primary); font-size: 20px; font-weight: 800; margin-bottom: 26px; }
+.authCard h1 { margin: 0 0 8px; font-size: 30px; letter-spacing: -.03em; }
+.authIntro { margin: 0 0 24px; color: var(--muted); line-height: 1.6; }
+.authForm { display: grid; gap: 17px; }
+.authForm label { display: grid; gap: 7px; font-size: 13px; font-weight: 650; color: #344054; }
+.authForm input, .authForm select { width: 100%; border: 1px solid #d0d5dd; border-radius: 9px; padding: 11px 12px; background: white; color: var(--text); outline: none; }
+.authForm input:focus, .authForm select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+.authButton { border: 0; border-radius: 9px; padding: 12px 16px; background: var(--primary); color: white; font-weight: 700; cursor: pointer; }
+.authButton:disabled { opacity: .65; cursor: wait; }
+.authSwitch { margin: 20px 0 0; text-align: center; color: var(--muted); font-size: 13px; }
+.authSwitch a { color: var(--primary); font-weight: 650; text-decoration: none; }
+.formError, .formMessage { padding: 10px 12px; border-radius: 8px; font-size: 13px; line-height: 1.45; }
+.formError { background: #fef3f2; color: #b42318; }
+.formMessage { background: #ecfdf3; color: #027a48; }
+.optional { color: #98a2b3; font-weight: 400; }
+.signoutForm { margin-top: 20px; text-align: center; }
+.textButton { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 13px; }
+.textButton:hover { color: var(--text); }
 @media (max-width: 1000px) { .sidebar { width: 210px; } .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 700px) { .dashboard { display: block; } .sidebar { width: auto; } .topbar { padding: 0 18px; } .content { padding: 22px 18px; } .grid { grid-template-columns: 1fr; } }
+@media (max-width: 700px) { .dashboard { display: block; } .sidebar { width: auto; } .topbar { padding: 0 18px; } .content { padding: 22px 18px; } .grid { grid-template-columns: 1fr; } .topbarRight { gap: 8px; } .business { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .authCard { padding: 26px 22px; } }
