@@ -106,3 +106,5 @@ th { color:var(--muted); font-weight:650; font-size:12px; }
 @media (max-width:700px) { .businessQuickNav { gap:8px; margin-bottom:18px; } .businessQuickNavItem { padding:11px 12px; } .businessQuickNavIcon { width:34px; height:34px; flex-basis:34px; } }
 
 .activityList{display:grid;gap:10px}.activityList>div{display:flex;align-items:baseline;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--border)}.activityList strong{font-size:22px}.activityList span{color:var(--muted);font-size:12px}.inventoryNote{margin-top:18px!important}.inventoryNote{font-size:12px!important}
+
+.accountingBalances{margin-top:16px}.accountingExpenseCard{margin-top:16px}.accountingNote{margin-top:16px}.accountingNote h3{margin:0 0 8px;font-size:15px}
