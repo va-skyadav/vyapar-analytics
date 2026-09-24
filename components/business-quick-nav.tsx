@@ -1,33 +1,12 @@
 import { Boxes, ShoppingCart, Users, ArrowUpRight } from "lucide-react";
 
 const actions = [
-  {
-    key: "products",
-    step: "01",
-    title: "Products",
-    description: "Manage items, prices & stock",
-    href: "/products",
-    icon: Boxes
-  },
-  {
-    key: "customers",
-    step: "02",
-    title: "Customers",
-    description: "Manage customers & credit",
-    href: "/customers",
-    icon: Users
-  },
-  {
-    key: "sales",
-    step: "03",
-    title: "Record Sale",
-    description: "Create a sale & update analytics",
-    href: "/sales",
-    icon: ShoppingCart
-  }
-];
+  { key: "products", step: "01", title: "Products", description: "Manage items, prices & stock", href: "/products", icon: Boxes },
+  { key: "customers", step: "02", title: "Customers", description: "Manage customers & credit", href: "/customers", icon: Users },
+  { key: "sales", step: "03", title: "Record Sale", description: "Create a sale & update analytics", href: "/sales", icon: ShoppingCart }
+] as const;
 
-export function BusinessQuickNav({ active }: { active: "products" | "customers" | "sales" }) {
+export function BusinessQuickNav({ active }: { active?: "products" | "customers" | "sales" }) {
   return (
     <nav className="businessQuickNav" aria-label="Business workflow">
       {actions.map(({ key, step, title, description, href, icon: Icon }) => (
