@@ -3,11 +3,11 @@ import type { ReactNode } from "react";
 
 const modules = [
   { label: "Analytics", href: "/", icon: BarChart3 },
-  { label: "Accounting", href: "#", icon: Calculator },
-  { label: "Inventory", href: "/products", icon: Boxes },
-  { label: "HR", href: "#", icon: Users },
-  { label: "Taxation", href: "#", icon: ReceiptText },
-  { label: "Predictions", href: "#", icon: BrainCircuit }
+  { label: "Accounting", href: "/accounting", icon: Calculator },
+  { label: "Inventory", href: "/inventory", icon: Boxes },
+  { label: "HR", href: "/hr", icon: Users },
+  { label: "Taxation", href: "/taxation", icon: ReceiptText },
+  { label: "Predictions", href: "/predictions", icon: BrainCircuit }
 ];
 
 export function AppShell({ businessName, title, children }: { businessName: string; title: string; children: ReactNode }) {
