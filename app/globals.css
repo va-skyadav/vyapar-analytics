@@ -104,3 +104,5 @@ th { color:var(--muted); font-weight:650; font-size:12px; }
 .businessQuickNavItem:hover .businessQuickNavArrow, .businessQuickNavItem.active .businessQuickNavArrow { color:var(--primary); }
 @media (max-width:900px) { .businessQuickNav { grid-template-columns:1fr; } .businessQuickNavItem { min-height:70px; } }
 @media (max-width:700px) { .businessQuickNav { gap:8px; margin-bottom:18px; } .businessQuickNavItem { padding:11px 12px; } .businessQuickNavIcon { width:34px; height:34px; flex-basis:34px; } }
+
+.activityList{display:grid;gap:10px}.activityList>div{display:flex;align-items:baseline;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--border)}.activityList strong{font-size:22px}.activityList span{color:var(--muted);font-size:12px}.inventoryNote{margin-top:18px!important}.inventoryNote{font-size:12px!important}
