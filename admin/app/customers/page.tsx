@@ -2,12 +2,13 @@
 import {useEffect,useMemo,useState} from "react";
 import AdminShell from "../../components/admin-shell";
 import {supabase} from "../../lib/supabase";
+import {notifyAdminRefreshComplete,useAdminRefresh} from "../../lib/admin-refresh";
 type Customer={id:string;name:string;legal_name:string|null;business_type:string|null;industry:string|null;email:string|null;phone:string|null;is_active:boolean;lifecycle_status:"ACTIVE"|"SUSPENDED"|"OFFBOARDED";created_at:string};
 type Issue={id:string;business_id:string|null;title:string;priority:string;status:string;created_at:string};
 
 export default function Customers(){
  const [rows,setRows]=useState<Customer[]>([]),[issues,setIssues]=useState<Issue[]>([]),[q,setQ]=useState(""),[filter,setFilter]=useState("ALL"),[loading,setLoading]=useState(true),[error,setError]=useState("");
- const load=async()=>{setLoading(true);setError("");const s=supabase();const [b,i]=await Promise.all([
+ const load=async(showLoading=true)=>{if(showLoading)setLoading(true);setError("");const s=supabase();const [b,i]=await Promise.all([
   s.from("businesses").select("id,name,legal_name,business_type,industry,email,phone,is_active,lifecycle_status,created_at").order("created_at",{ascending:false}),
   s.from("support_issues").select("id,business_id,title,priority,status,created_at").order("created_at",{ascending:false}).limit(20)
  ]);if(b.error||i.error)setError(b.error?.message||i.error?.message||"Unable to load customer data");else{setRows(b.data||[]);setIssues(i.data||[])}setLoading(false)};
