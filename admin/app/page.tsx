@@ -11,14 +11,14 @@ const money=(v:number)=>new Intl.NumberFormat("en-IN",{style:"currency",currency
 
 export default function Home(){
  const [metrics,setMetrics]=useState<Metrics|null>(null),[ops,setOps]=useState<Ops|null>(null),[growth,setGrowth]=useState<Growth[]>([]);
- const [loading,setLoading]=useState(true),[refreshing,setRefreshing]=useState(false),[error,setError]=useState(""),[lastUpdated,setLastUpdated]=useState<Date|null>(null);
+ const [loading,setLoading]=useState(true),[error,setError]=useState("");
  const load=useCallback(async(first=false)=>{
-  first?setLoading(true):setRefreshing(true);setError("");
+  setLoading(true);setError("");
   const s=supabase();const {data:{user}}=await s.auth.getUser();if(!user){location.href="/login";return}
   const [summary,operational,growthData]=await Promise.all([s.rpc("get_admin_dashboard_summary"),s.rpc("get_admin_dashboard_operational"),s.rpc("get_admin_customer_growth")]);
   const err=summary.error||operational.error||growthData.error;
-  if(err)setError(err.message);else{setMetrics(summary.data?.[0]??null);setOps(operational.data?.[0]??null);setGrowth(growthData.data??[]);setLastUpdated(new Date())}
-  setLoading(false);setRefreshing(false);
+  if(err)setError(err.message);else{setMetrics(summary.data?.[0]??null);setOps(operational.data?.[0]??null);setGrowth(growthData.data??[])}
+  setLoading(false);
  },[]);
  useEffect(()=>{load(true)},[load]);
  if(loading)return <AdminShell active="/"><div className="card">Loading dashboard...</div></AdminShell>;
