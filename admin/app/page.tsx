@@ -19,7 +19,7 @@ export default function Home(){
   const [summary,operational,growthData]=await Promise.all([s.rpc("get_admin_dashboard_summary"),s.rpc("get_admin_dashboard_operational"),s.rpc("get_admin_customer_growth")]);
   const err=summary.error||operational.error||growthData.error;
   if(err)setError(err.message);else{setMetrics(summary.data?.[0]??null);setOps(operational.data?.[0]??null);setGrowth(growthData.data??[])}
-  setLoading(false);
+  setLoading(false);notifyAdminRefreshComplete();
  },[]);
  useEffect(()=>{load()},[load]);
  if(loading)return <AdminShell active="/"><div className="card">Loading dashboard...</div></AdminShell>;
