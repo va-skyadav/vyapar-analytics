@@ -127,7 +127,7 @@ export default function Organization(){
  return <AdminShell active="/organization">
   {error&&<div className={error==="Password changed successfully."?"notice":"notice errorNotice"}>{error}</div>}
   {passwordAdmin&&<section className="card financePanel addAdminPanel roleEditorPanel">
-   <div className="panelHeader"><div><div className="panelTitle">Change Administrator Password</div><div className="muted panelSubtitle">Direct password administration is available to VA Super Admin. No password-reset email or rate-limit wait is required.</div></div><button className="secondaryButton" onClick={()=>{setPasswordAdmin(null);setNewPassword("")}}>Close</button></div>
+   <div className="panelHeader"><div><div className="panelTitle">Change Administrator Password</div><div className="muted panelSubtitle">Direct password administration is available only to VA Super Admin and does not use the password-reset email workflow.</div></div><button className="secondaryButton" onClick={()=>{setPasswordAdmin(null);setNewPassword("")}}>Close</button></div>
    <div className="roleEditorHeader"><strong>{passwordAdmin.display_name}</strong><span className="muted">{passwordAdmin.email}</span></div>
    <label>New password<input className="input" type="password" value={newPassword} onChange={e=>setNewPassword(e.target.value)} placeholder="Minimum 8 characters"/></label>
    <div className="addAdminActions"><button className="secondaryButton" onClick={()=>{setPasswordAdmin(null);setNewPassword("")}}>Cancel</button><button className="primaryButton" disabled={savingPassword} onClick={changePassword}>{savingPassword?"Changing...":"Change Password"}</button></div>
