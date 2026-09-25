@@ -23,7 +23,7 @@ export default function Home(){
  useEffect(()=>{load(true)},[load]);
  if(loading)return <AdminShell active="/"><div className="card">Loading dashboard...</div></AdminShell>;
  return <AdminShell active="/">
-  <div className="dashboardHeader"><div><div className="title">Business overview</div><div className="muted">Platform performance, customers and commercial activity.</div></div><div className="headerActions"><button className="secondaryButton" onClick={()=>load(false)} disabled={refreshing}>{refreshing?"Refreshing...":"Refresh"}</button><span className="muted smallText">{lastUpdated?"Updated "+lastUpdated.toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}):""}</span></div></div>
+  <div className="dashboardHeader"><div><div className="title">Business overview</div><div className="muted">Platform performance, customers and commercial activity.</div></div><div className="headerActions"><button className="secondaryButton" onClick={()=>load(false)} disabled={refreshing}>{refreshing?"Refreshing...":"Refresh"}</button><span className="muted smallText">{lastUpdated?"Updated "+lastUpdated.toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}):""}</span></div></div><div className="dashboardPageMenu"><a href="/customers"><strong>Customers</strong><span>Accounts & lifecycle</span></a><a href="/finance"><strong>Finance & Growth</strong><span>Plans & commercial metrics</span></a><a href="/organization"><strong>Organization</strong><span>Admins & roles</span></a><a href="/settings"><strong>Settings & Platform</strong><span>Controls & audit</span></a></div>
   {error&&<div className="notice errorNotice">{error}</div>}
   {metrics&&ops&&<>
    <div className="sectionTitle">Commercial Snapshot</div>
@@ -45,12 +45,10 @@ export default function Home(){
      {growth.slice(-6).reverse().map(x=><div className="miniRow" key={x.month}><span>{new Date(x.month).toLocaleDateString("en-IN",{month:"short",year:"numeric"})}</span><strong>{Number(x.new_customers).toLocaleString()}</strong></div>)}{!growth.length&&<div className="empty">No customer growth history yet.</div>}
     </div></section>
    </div>
-   <div className="sectionTitle actionTitle">Quick Actions</div><div className="quickActions">
-    <Action href="/customers" title="Manage Customers" text="Search, activate or deactivate accounts"/><Action href="/finance" title="Finance & Growth" text="Review plans, acquisition and commercial metrics"/><Action href="/organization" title="Organization" text="Manage admin users, roles and departments"/><Action href="/settings" title="Settings & Platform" text="Review permissions, settings and audit events"/>
-   </div>
+   
   </>}
  </AdminShell>
 }
 function Metric({label,value,detail,alert=false}:{label:string;value:string;detail:string;alert?:boolean}){return <div className={alert?"metricCard attention":"metricCard"}><div className="label">{label}</div><div className="metricValue">{value}</div><div className="metricDetail">{detail}</div></div>}
 function HealthRow({label,value,warn=false,danger=false}:{label:string;value:number;warn?:boolean;danger?:boolean}){return <div className="healthRow"><span>{label}</span><strong className={danger&&value>0?"danger":warn&&value>0?"warning":""}>{value.toLocaleString()}</strong></div>}
-function Action({href,title,text}:{href:string;title:string;text:string}){return <a className="actionCard" href={href}><strong>{title}</strong><span>{text}</span><b>→</b></a>}
+
