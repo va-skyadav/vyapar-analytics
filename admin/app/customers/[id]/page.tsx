@@ -7,7 +7,7 @@ type Data={business:any;owner:any;subscription:any;usage:any[];issues:any[];paym
 const money=(v:any)=>new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:0}).format(Number(v||0));
 const fmt=(v:any)=>v?new Date(v).toLocaleString("en-IN"):"—";
 
-export default function CustomerDetail({params}:{params:{id:string}}){
+export default async function CustomerDetail({params}:{params:Promise<{id:string}>}){
  const [data,setData]=useState<Data|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState("");
  const load=async()=>{setLoading(true);const {data,error}=await supabase().rpc("get_admin_customer_360",{p_business_id:params.id});if(error)setError(error.message);else setData(data as Data);setLoading(false)};
  useEffect(()=>{load()},[params.id]);
