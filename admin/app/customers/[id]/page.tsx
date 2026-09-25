@@ -10,7 +10,7 @@ const fmt=(v:any)=>v?new Date(v).toLocaleString("en-IN"):"—";
 
 export default function CustomerDetail({params}:{params:Promise<{id:string}>}){
  const {id}=use(params); const [data,setData]=useState<Data|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState("");
- const load=async(showLoading=true)=>{if(showLoading)setLoading(true);const {data,error}=await supabase().rpc("get_admin_customer_360",{p_business_id:id});if(error)setError(error.message);else setData(data as Data);setLoading(false)};
+ const load=async(showLoading=true)=>{if(showLoading)setLoading(true);const {data,error}=await supabase().rpc("get_admin_customer_360",{p_business_id:id});if(error)setError(error.message);else setData(data as Data);setLoading(false);notifyAdminRefreshComplete()};
  useEffect(()=>{load()},[id]);
  const setStatus=async(status:"ACTIVE"|"SUSPENDED"|"OFFBOARDED")=>{const reason=window.prompt("Reason (optional):")??null;const {error}=await supabase().rpc("admin_set_customer_lifecycle",{p_business_id:id,p_status:status,p_reason:reason});if(error)setError(error.message);else load()};
  if(loading)return <AdminShell active="/customers"><div className="card">Loading customer...</div></AdminShell>;
