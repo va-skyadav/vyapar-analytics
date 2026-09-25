@@ -8,7 +8,7 @@ import {notifyAdminRefreshComplete,useAdminRefresh} from "../../lib/admin-refres
 type Admin={id:string;user_id:string;email:string;display_name:string;status:string;role_id:string|null;department_id:string|null;created_at:string;role?:{code:string;name:string}|null;department?:{name:string}|null};
 type Role={id:string;code:string;name:string;description:string|null;is_active:boolean};
 type Dept={id:string;name:string;is_active:boolean};
-type RoleRight={role_id:string;role_code:string;role_name:string;role_description:string|null;permission_code:string|null;permission_name:string|null;module:string|null;action:string|null};
+type RoleRight={role_id:string;role_code:string;role_name:string;role_description:string|null;permission_id:string|null;permission_code:string|null;permission_name:string|null;module:string|null;action:string|null};
 
 const responsibility:Record<string,string>={
  SUPER_ADMIN:"Full platform governance, security, administration and control.",
@@ -67,7 +67,7 @@ export default function Organization(){
  const filteredAdmins=useMemo(()=>{const q=search.trim().toLowerCase();if(!q)return admins;return admins.filter(a=>a.display_name.toLowerCase().includes(q)||a.email.toLowerCase().includes(q)||(a.role?.name||"").toLowerCase().includes(q)||(a.department?.name||"").toLowerCase().includes(q));},[admins,search]);
  const selectedRoleInfo=roles.find(r=>r.id===form.role_id);
  const selectedRoleRights=rights.filter(r=>r.role_id===form.role_id);
- const allPermissions=useMemo(()=>Array.from(new Map(rights.filter(r=>r.permission_code).map(r=>[r.permission_code!,{id:"",code:r.permission_code!,name:r.permission_name||r.permission_code!,module:r.module||"other",action:r.action||""}])).values()),[rights]);
+ const allPermissions=useMemo(()=>Array.from(new Map(rights.filter(r=>r.permission_id&&r.permission_code).map(r=>[r.permission_code!,{id:r.permission_id!,code:r.permission_code!,name:r.permission_name||r.permission_code!,module:r.module||"other",action:r.action||""}])).values()),[rights]);
  const resetForm=()=>setForm({display_name:"",email:"",role_id:"",department_id:""});
  const openRoleEditor=(role:Role)=>{
   setEditingRole(role);
@@ -78,9 +78,7 @@ export default function Organization(){
  const saveRoleAccess=async()=>{
   if(!editingRole)return;
   setSavingRole(true);setError("");
-  const permissionIds=rights.filter(x=>x.role_id===editingRole.id&&x.permission_code&&editPermissions.includes(x.permission_code)).map(x=>{
-   const match=allPermissions.find(p=>p.code===x.permission_code);return match?.id;
-  }).filter(Boolean) as string[];
+  const permissionIds=allPermissions.filter(p=>editPermissions.includes(p.code)).map(p=>p.id);
   const {error}=await supabase().rpc("admin_update_role_access",{p_role_id:editingRole.id,p_description:editDescription,p_permission_ids:permissionIds});
   if(error)setError(error.message);
   else{setEditingRole(null);await load(false);}
