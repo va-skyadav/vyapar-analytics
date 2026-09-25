@@ -21,10 +21,9 @@ export default function Home(){
   setLoading(false);setRefreshing(false);
  },[]);
  useEffect(()=>{load(true)},[load]);
- const logout=async()=>{await supabase().auth.signOut();location.href="/login"};
- if(loading)return <AdminLayout logout={logout}><div className="card">Loading dashboard...</div></AdminLayout>;
+ if(loading)return <AdminShell active="/"><div className="card">Loading dashboard...</div></AdminShell>;
  return <AdminShell active="/">
-  <div className="dashboardHeader"><div><div className="title">Admin Dashboard</div><div className="muted">Business and platform control center</div></div><div className="headerActions"><button className="secondaryButton" onClick={()=>load(false)} disabled={refreshing}>{refreshing?"Refreshing...":"Refresh"}</button><span className="muted smallText">{lastUpdated?"Updated "+lastUpdated.toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}):""}</span></div></div>
+  <div className="dashboardHeader"><div><div className="title">Business overview</div><div className="muted">Platform performance, customers and commercial activity.</div></div><div className="headerActions"><button className="secondaryButton" onClick={()=>load(false)} disabled={refreshing}>{refreshing?"Refreshing...":"Refresh"}</button><span className="muted smallText">{lastUpdated?"Updated "+lastUpdated.toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}):""}</span></div></div>
   {error&&<div className="notice errorNotice">{error}</div>}
   {metrics&&ops&&<>
    <div className="sectionTitle">Commercial Snapshot</div>
@@ -50,7 +49,7 @@ export default function Home(){
     <Action href="/customers" title="Manage Customers" text="Search, activate or deactivate accounts"/><Action href="/finance" title="Finance & Growth" text="Review plans, acquisition and commercial metrics"/><Action href="/organization" title="Organization" text="Manage admin users, roles and departments"/><Action href="/settings" title="Settings & Platform" text="Review permissions, settings and audit events"/>
    </div>
   </>}
- </AdminLayout>
+ </AdminShell>
 }
 function Metric({label,value,detail,alert=false}:{label:string;value:string;detail:string;alert?:boolean}){return <div className={alert?"metricCard attention":"metricCard"}><div className="label">{label}</div><div className="metricValue">{value}</div><div className="metricDetail">{detail}</div></div>}
 function HealthRow({label,value,warn=false,danger=false}:{label:string;value:number;warn?:boolean;danger?:boolean}){return <div className="healthRow"><span>{label}</span><strong className={danger&&value>0?"danger":warn&&value>0?"warning":""}>{value.toLocaleString()}</strong></div>}
