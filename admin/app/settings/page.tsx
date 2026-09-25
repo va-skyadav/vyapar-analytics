@@ -102,7 +102,8 @@ export default function Settings(){
  const savePlan=async()=>{
   if(!editingPlan)return;
   const monthly=Number(planForm.monthly_price),annual=Number(planForm.annual_price);
-  if(!Number.isFinite(monthly)||monthly<0||!Number.isFinite(annual)||annual<0){setError("Plan prices must be valid non-negative numbers.");return;}\n  let limits:any,features:any; try{limits=JSON.parse(planForm.limits||"{}");features=JSON.parse(planForm.features||"{}");}catch{setError("Plan limits and feature entitlements must be valid JSON.");return;}
+  if(!Number.isFinite(monthly)||monthly<0||!Number.isFinite(annual)||annual<0){setError("Plan prices must be valid non-negative numbers.");return;}
+  let limits:any,features:any; try{limits=JSON.parse(planForm.limits||"{}");features=JSON.parse(planForm.features||"{}");}catch{setError("Plan limits and feature entitlements must be valid JSON.");return;}
   setSaving(editingPlan.id);setError("");
   const {error:e}=await supabase().from("subscription_plans").update({name:planForm.name.trim(),monthly_price:monthly,annual_price:annual,currency_code:planForm.currency_code.trim().toUpperCase().slice(0,3),is_active:planForm.is_active,description:planForm.description.trim(),limits,features}).eq("id",editingPlan.id);
   if(e)setError(e.message);else{await adminAudit("SUBSCRIPTION_PLAN_UPDATED","subscription_plans",editingPlan.id,editingPlan,{...editingPlan,...planForm,monthly_price:monthly,annual_price:annual});setEditingPlan(null);await load(false);}
