@@ -11,7 +11,7 @@ export default function Customers(){
  const load=async(showLoading=true)=>{if(showLoading)setLoading(true);setError("");const s=supabase();const [b,i]=await Promise.all([
   s.from("businesses").select("id,name,legal_name,business_type,industry,email,phone,is_active,lifecycle_status,created_at").order("created_at",{ascending:false}),
   s.from("support_issues").select("id,business_id,title,priority,status,created_at").order("created_at",{ascending:false}).limit(20)
- ]);if(b.error||i.error)setError(b.error?.message||i.error?.message||"Unable to load customer data");else{setRows(b.data||[]);setIssues(i.data||[])}setLoading(false)};
+ ]);if(b.error||i.error)setError(b.error?.message||i.error?.message||"Unable to load customer data");else{setRows(b.data||[]);setIssues(i.data||[])}setLoading(false);notifyAdminRefreshComplete()};
  useEffect(()=>{load()},[]);
  const filtered=useMemo(()=>rows.filter(r=>(filter==="ALL"||r.lifecycle_status===filter)&&(!q||[r.name,r.legal_name,r.email,r.phone,r.industry].filter(Boolean).join(" ").toLowerCase().includes(q.toLowerCase()))),[rows,q,filter]);
  const setStatus=async(r:Customer,status:Customer["lifecycle_status"])=>{const reason=window.prompt("Reason (optional):")??null;const {data,error}=await supabase().rpc("admin_set_customer_lifecycle",{p_business_id:r.id,p_status:status,p_reason:reason});if(error){setError(error.message);return}setRows(x=>x.map(v=>v.id===r.id?{...v,lifecycle_status:status,is_active:status==="ACTIVE"}:v));};
