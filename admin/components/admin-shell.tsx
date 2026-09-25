@@ -3,7 +3,7 @@ import {useEffect,useState} from "react";
 import {LogOut} from "lucide-react";
 import {supabase} from "../lib/supabase";
 
-const links=[["/","Dashboard"],["/customers","Customers"],["/finance","Finance & Growth"],["/organization","Organization"],["/settings","Settings & Platform"]];
+const links=[["/","Business Overview"],["/customers","Customers"],["/finance","Finance & Growth"],["/organization","Organization"],["/settings","Settings & Platform"]];
 
 export default function AdminShell({active,children}:{active:string;children:React.ReactNode}){
   const [checking,setChecking]=useState(true);
