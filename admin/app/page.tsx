@@ -23,8 +23,7 @@ export default function Home(){
  useEffect(()=>{load(true)},[load]);
  if(loading)return <AdminShell active="/"><div className="card">Loading dashboard...</div></AdminShell>;
  return <AdminShell active="/">
-  <div className="dashboardHeader"><div><div className="title">Business overview</div><div className="muted">Platform performance, customers and commercial activity.</div></div><div className="headerActions"><button className="secondaryButton" onClick={()=>load(false)} disabled={refreshing}>{refreshing?"Refreshing...":"Refresh"}</button><span className="muted smallText">{lastUpdated?"Updated "+lastUpdated.toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}):""}</span></div></div><div className="dashboardPageMenu"><a href="/customers"><strong>Customers</strong><span>Accounts & lifecycle</span></a><a href="/finance"><strong>Finance & Growth</strong><span>Plans & commercial metrics</span></a><a href="/organization"><strong>Organization</strong><span>Admins & roles</span></a><a href="/settings"><strong>Settings & Platform</strong><span>Controls & audit</span></a></div>
-  {error&&<div className="notice errorNotice">{error}</div>}
+  <div className="dashboardHeader"><div><div className="title">Business overview</div><div className="muted">Platform performance, customers and commercial activity.</div></div><div className="headerActions"><button className="secondaryButton" onClick={()=>load(false)} disabled={refreshing}>{refreshing?"Refreshing...":"Refresh"}</button><span className="muted smallText">{lastUpdated?"Updated "+lastUpdated.toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}):""}</span></div></div>{error&&<div className="notice errorNotice">{error}</div>}
   {metrics&&ops&&<>
    <div className="sectionTitle">Commercial Snapshot</div>
    <div className="dashboardGrid">
