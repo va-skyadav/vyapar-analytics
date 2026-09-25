@@ -119,3 +119,5 @@ html,body{background:var(--admin-bg);font-family:Inter,ui-sans-serif,system-ui,-
 .statsRow.customerKpis .card:nth-child(4){background:#fff1f2}.statsRow.customerKpis .card:nth-child(4):before{background:#ef4444}.statsRow.customerKpis .card:nth-child(4) .value{color:#be123c}
 
 .lastRefreshed{font-size:12px;color:var(--admin-muted);white-space:nowrap}
+
+.topRefreshButton:disabled{opacity:.85;cursor:wait}.refreshSpin{animation:adminRefreshSpin .8s linear infinite}@keyframes adminRefreshSpin{to{transform:rotate(360deg)}}
