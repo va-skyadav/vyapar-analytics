@@ -2,6 +2,7 @@
 
 import {useCallback,useEffect,useState} from "react";
 import {supabase} from "../lib/supabase";
+import AdminShell from "../components/admin-shell";
 
 type Metrics={total_customers:number;active_customers:number;trial_customers:number;cancelled_or_expired_subscriptions:number;mrr:number;arr:number;new_customers_this_month:number;marketing_spend_this_month:number;leads_this_month:number;conversions_this_month:number;cac_this_month:number|null;forecast_data_status:string};
 type Ops={open_issues:number;urgent_issues:number;active_subscriptions:number;trial_subscriptions:number;expiring_trials_7d:number;cancelling_subscriptions:number;recent_customers:number;customers_last_30d:number};
@@ -22,7 +23,7 @@ export default function Home(){
  useEffect(()=>{load(true)},[load]);
  const logout=async()=>{await supabase().auth.signOut();location.href="/login"};
  if(loading)return <AdminLayout logout={logout}><div className="card">Loading dashboard...</div></AdminLayout>;
- return <AdminLayout logout={logout}>
+ return <AdminShell active="/">
   <div className="dashboardHeader"><div><div className="title">Admin Dashboard</div><div className="muted">Business and platform control center</div></div><div className="headerActions"><button className="secondaryButton" onClick={()=>load(false)} disabled={refreshing}>{refreshing?"Refreshing...":"Refresh"}</button><span className="muted smallText">{lastUpdated?"Updated "+lastUpdated.toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}):""}</span></div></div>
   {error&&<div className="notice errorNotice">{error}</div>}
   {metrics&&ops&&<>
@@ -54,4 +55,3 @@ export default function Home(){
 function Metric({label,value,detail,alert=false}:{label:string;value:string;detail:string;alert?:boolean}){return <div className={alert?"metricCard attention":"metricCard"}><div className="label">{label}</div><div className="metricValue">{value}</div><div className="metricDetail">{detail}</div></div>}
 function HealthRow({label,value,warn=false,danger=false}:{label:string;value:number;warn?:boolean;danger?:boolean}){return <div className="healthRow"><span>{label}</span><strong className={danger&&value>0?"danger":warn&&value>0?"warning":""}>{value.toLocaleString()}</strong></div>}
 function Action({href,title,text}:{href:string;title:string;text:string}){return <a className="actionCard" href={href}><strong>{title}</strong><span>{text}</span><b>→</b></a>}
-function AdminLayout({children,logout}:{children:React.ReactNode;logout:()=>void}){return <div className="shell"><aside className="sidebar"><div className="brand">Vyapar Analytics</div><nav className="nav"><a className="active" href="/">Dashboard</a><a href="/customers">Customers</a><a href="/finance">Finance & Growth</a><a href="/organization">Organization</a><a href="/settings">Settings & Platform</a></nav></aside><main className="main"><div className="top"><div></div><button className="button topButton" onClick={logout}>Sign out</button></div>{children}</main></div>}
