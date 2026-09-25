@@ -68,7 +68,7 @@ html,body{background:var(--admin-bg);font-family:Inter,ui-sans-serif,system-ui,-
 .main{flex:1;min-width:0;width:auto;max-width:none;padding:0}
 .adminTopbar{height:72px;background:#fff;border-bottom:1px solid var(--admin-border);display:flex;align-items:center;justify-content:space-between;padding:0 32px}
 .adminTopbar h1{margin:0;font-size:20px;font-weight:650;color:var(--admin-text);letter-spacing:-.01em}
-.adminTopbarRight{display:flex;align-items:center;gap:14px}
+.adminTopbarRight{display:flex;align-items:center;gap:14px;margin-left:auto}
 .adminRole{font-size:13px;color:var(--admin-muted)}
 .iconButton{width:36px;height:36px;border:1px solid var(--admin-border);border-radius:8px;background:#fff;color:var(--admin-muted);display:grid;place-items:center;cursor:pointer}
 .iconButton:hover{color:var(--admin-text);border-color:#cbd5e1}
