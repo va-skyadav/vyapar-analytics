@@ -33,6 +33,10 @@ export default function Organization(){
  const [form,setForm]=useState({display_name:"",email:"",role_id:"",department_id:""});
  const [saving,setSaving]=useState(false);
  const [selectedRole,setSelectedRole]=useState("");
+ const [editingRole,setEditingRole]=useState<Role|null>(null);
+ const [editDescription,setEditDescription]=useState("");
+ const [editPermissions,setEditPermissions]=useState<string[]>([]);
+ const [savingRole,setSavingRole]=useState(false);
 
  const load=useCallback(async(showLoading=true)=>{
   if(showLoading)setLoading(true);
@@ -63,7 +67,25 @@ export default function Organization(){
  const filteredAdmins=useMemo(()=>{const q=search.trim().toLowerCase();if(!q)return admins;return admins.filter(a=>a.display_name.toLowerCase().includes(q)||a.email.toLowerCase().includes(q)||(a.role?.name||"").toLowerCase().includes(q)||(a.department?.name||"").toLowerCase().includes(q));},[admins,search]);
  const selectedRoleInfo=roles.find(r=>r.id===form.role_id);
  const selectedRoleRights=rights.filter(r=>r.role_id===form.role_id);
+ const allPermissions=useMemo(()=>Array.from(new Map(rights.filter(r=>r.permission_code).map(r=>[r.permission_code!,{id:"",code:r.permission_code!,name:r.permission_name||r.permission_code!,module:r.module||"other",action:r.action||""}])).values()),[rights]);
  const resetForm=()=>setForm({display_name:"",email:"",role_id:"",department_id:""});
+ const openRoleEditor=(role:Role)=>{
+  setEditingRole(role);
+  setEditDescription(role.description||"");
+  setEditPermissions(rights.filter(x=>x.role_id===role.id).map(x=>x.permission_code).filter(Boolean) as string[]);
+ };
+ const togglePermission=(code:string)=>setEditPermissions(items=>items.includes(code)?items.filter(x=>x!==code):[...items,code]);
+ const saveRoleAccess=async()=>{
+  if(!editingRole)return;
+  setSavingRole(true);setError("");
+  const permissionIds=rights.filter(x=>x.role_id===editingRole.id&&x.permission_code&&editPermissions.includes(x.permission_code)).map(x=>{
+   const match=allPermissions.find(p=>p.code===x.permission_code);return match?.id;
+  }).filter(Boolean) as string[];
+  const {error}=await supabase().rpc("admin_update_role_access",{p_role_id:editingRole.id,p_description:editDescription,p_permission_ids:permissionIds});
+  if(error)setError(error.message);
+  else{setEditingRole(null);await load(false);}
+  setSavingRole(false);
+ };
 
  const addUser=async()=>{
   if(!form.display_name.trim()||!form.email.trim()||!form.role_id){setError("Name, email and access role are required.");return;}
@@ -100,7 +122,16 @@ export default function Organization(){
 
  return <AdminShell active="/organization">
   {error&&<div className={error.startsWith("Password reset")?"notice":"notice errorNotice"}>{error}</div>}
-  {loading?<div className="card">Loading organization...</div>:<>
+  {editingRole&&<section className="card financePanel addAdminPanel roleEditorPanel">
+    <div className="panelHeader"><div><div className="panelTitle">Edit Role Rights & Responsibilities</div><div className="muted panelSubtitle">Only VA Super Admin can change the access profile used by administrators and Chief Executives.</div></div><button className="secondaryButton" onClick={()=>setEditingRole(null)}>Close</button></div>
+    <div className="roleEditorHeader"><strong>{editingRole.name}</strong><span className="muted">{editingRole.code}</span></div>
+    <label>Responsibilities / role definition<textarea className="input roleDescriptionInput" value={editDescription} onChange={e=>setEditDescription(e.target.value)} rows={3}/></label>
+    <div className="permissionEditor"><div className="panelTitle">Allowed rights</div><div className="muted panelSubtitle">Select the minimum permissions this role should receive. Changes apply to every administrator assigned this role.</div>
+     <div className="permissionGrid">{allPermissions.map(p=><label className="permissionItem" key={p.code}><input type="checkbox" checked={editPermissions.includes(p.code)} onChange={()=>togglePermission(p.code)}/><span><strong>{p.name}</strong><small>{p.code}</small></span></label>)}</div>
+    </div>
+    <div className="addAdminActions"><button className="secondaryButton" onClick={()=>setEditingRole(null)}>Cancel</button><button className="primaryButton" disabled={savingRole} onClick={saveRoleAccess}>{savingRole?"Saving...":"Save Rights & Responsibilities"}</button></div>
+   </section>}
+   {loading?<div className="card">Loading organization...</div>:<>
    <div className="organizationHero">
     <div><div className="sectionTitle">Organization & Access</div><div className="muted sectionSubtitle">Manage administrator access, roles, departments and platform rights.</div></div>
     <div className="organizationTools"><div className="organizationState"><span className="stateDot"/>{activeAdmins} active administrators</div><button className="primaryButton" onClick={()=>setShowAdd(v=>!v)}>{showAdd?"Close":"Add New User"}</button></div>
@@ -140,13 +171,13 @@ export default function Organization(){
 
    <section className="card financePanel roleReferencePanel">
     <div className="panelHeader"><div><div className="panelTitle">Administrative Role Reference</div><div className="muted panelSubtitle">Quick guide to the responsibility and effective rights associated with each access role.</div></div><span className="panelMeta">{activeRoles} active roles</span></div>
-    <div className="tableWrap"><table><thead><tr><th>Role</th><th>Responsibilities</th><th>Configured Rights</th></tr></thead><tbody>
-     {roles.filter(r=>r.is_active).map(role=><tr key={role.id}><td><strong>{role.name}</strong><div className="muted planCode">{role.code}</div></td><td>{responsibility[role.code]||role.description||"Administrative responsibilities defined by assigned permissions."}</td><td>{rights.filter(x=>x.role_id===role.id).map(x=>x.permission_name||x.permission_code).filter(Boolean).join(" • ")||"No explicit permissions configured"}</td></tr>)}
+    <div className="tableWrap"><table><thead><tr><th>Role</th><th>Responsibilities</th><th>Configured Rights</th><th>Control</th></tr></thead><tbody>
+     {roles.filter(r=>r.is_active).map(role=><tr key={role.id}><td><strong>{role.name}</strong><div className="muted planCode">{role.code}</div></td><td>{responsibility[role.code]||role.description||"Administrative responsibilities defined by assigned permissions."}</td><td>{rights.filter(x=>x.role_id===role.id).map(x=>x.permission_name||x.permission_code).filter(Boolean).join(" • ")||"No explicit permissions configured"}</td><td><button className="linkButton" onClick={()=>openRoleEditor(role)}>Edit Rights</button></td></tr>)}
     </tbody></table></div>
    </section>
 
    <div className="financeSectionGrid organizationLower">
-    <section className="card financePanel"><div className="panelHeader"><div><div className="panelTitle">Access Roles</div><div className="muted panelSubtitle">Defined administrative access profiles.</div></div><span className="panelMeta">{activeRoles} active</span></div>
+    <section className="card financePanel"><div className="panelHeader"><div><div className="panelTitle">Access Roles</div><div className="muted panelSubtitle">Defined administrative access profiles. Chief Executive roles are managed here by VA Super Admin.</div></div><span className="panelMeta">{activeRoles} active</span></div>
      <div className="tableWrap"><table><thead><tr><th>Code</th><th>Role</th><th>Description</th><th>Status</th></tr></thead><tbody>{roles.map(role=><tr key={role.id}><td><strong>{role.code}</strong></td><td>{role.name}</td><td className="roleDescription">{role.description||"—"}</td><td><span className={role.is_active?"badge good":"badge"}>{role.is_active?"ACTIVE":"INACTIVE"}</span></td></tr>)}</tbody></table></div>
     </section>
     <section className="card financePanel"><div className="panelHeader"><div><div className="panelTitle">Departments</div><div className="muted panelSubtitle">Organizational ownership groups.</div></div><span className="panelMeta">{activeDepts} active</span></div>
