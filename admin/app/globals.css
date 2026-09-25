@@ -117,3 +117,5 @@ html,body{background:var(--admin-bg);font-family:Inter,ui-sans-serif,system-ui,-
 .statsRow.customerKpis .card:nth-child(2){background:#ecfdf5}.statsRow.customerKpis .card:nth-child(2):before{background:#10b981}.statsRow.customerKpis .card:nth-child(2) .value{color:#047857}
 .statsRow.customerKpis .card:nth-child(3){background:#fff7ed}.statsRow.customerKpis .card:nth-child(3):before{background:#f97316}.statsRow.customerKpis .card:nth-child(3) .value{color:#c2410c}
 .statsRow.customerKpis .card:nth-child(4){background:#fff1f2}.statsRow.customerKpis .card:nth-child(4):before{background:#ef4444}.statsRow.customerKpis .card:nth-child(4) .value{color:#be123c}
+
+.lastRefreshed{font-size:12px;color:var(--admin-muted);white-space:nowrap}
