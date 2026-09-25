@@ -9,7 +9,7 @@ type Setting={id:string;key:string;value:any;updated_at:string};
 type Flag={id:string;code:string;name:string;description:string|null;enabled:boolean};
 type Integration={id:string;code:string;name:string;category:string;status:"connected"|"degraded"|"not_configured"|"disabled";description:string|null;last_checked_at:string|null};
 type Perm={id:string;code:string;name:string;module:string;action:string};
-type Plan={id:string;code:string;name:string;monthly_price:number;annual_price:number;currency_code:string;is_active:boolean};
+type Plan={id:string;code:string;name:string;monthly_price:number;annual_price:number;currency_code:string;is_active:boolean;description?:string|null};
 type Audit={id:string;action:string;entity_type:string|null;entity_id:string|null;created_at:string};
 
 const settingLabel=(key:string)=>({
@@ -28,7 +28,7 @@ export default function Settings(){
  const [loading,setLoading]=useState(true);
  const [error,setError]=useState("");
  const [query,setQuery]=useState("");
- const [saving,setSaving]=useState<string|null>(null);
+ const [saving,setSaving]=useState<string|null>(null);\n const [editingPlan,setEditingPlan]=useState<Plan|null>(null);\n const [planForm,setPlanForm]=useState({name:"",monthly_price:"",annual_price:"",currency_code:"INR",is_active:true});
 
  const load=useCallback(async(showLoading=true)=>{
   if(showLoading)setLoading(true); setError("");
@@ -38,7 +38,7 @@ export default function Settings(){
    s.from("platform_feature_flags").select("id,code,name,description,enabled").order("name"),
    s.from("platform_integrations").select("id,code,name,category,status,description,last_checked_at").order("category,name"),
    s.from("admin_permissions").select("id,code,name,module,action").order("module,code"),
-   s.from("subscription_plans").select("id,code,name,monthly_price,annual_price,currency_code,is_active").order("monthly_price"),
+   s.from("subscription_plans").select("id,code,name,monthly_price,annual_price,currency_code,is_active,description").order("monthly_price"),
    s.from("admin_audit_logs").select("id,action,entity_type,entity_id,created_at").order("created_at",{ascending:false}).limit(30)
   ]);
   const first=a.error||f.error||i.error||p.error||pl.error||l.error;
@@ -93,7 +93,7 @@ export default function Settings(){
   setSaving(null);
  };
 
- const updateSettingValue=(id:string,value:any)=>setSettings(x=>x.map(v=>v.id===id?{...v,value}:v));
+ const updateSettingValue=(id:string,value:any)=>setSettings(x=>x.map(v=>v.id===id?{...v,value}:v));\n\n const openPlan=(p:Plan)=>{setEditingPlan(p);setPlanForm({name:p.name,monthly_price:String(p.monthly_price??0),annual_price:String(p.annual_price??0),currency_code:(p.currency_code||"INR").trim(),is_active:p.is_active});};\n const savePlan=async()=>{\n  if(!editingPlan)return;\n  const monthly=Number(planForm.monthly_price),annual=Number(planForm.annual_price);\n  if(!Number.isFinite(monthly)||monthly<0||!Number.isFinite(annual)||annual<0){setError("Plan prices must be valid non-negative numbers.");return;}\n  setSaving(editingPlan.id);setError("");\n  const {error:e}=await supabase().from("subscription_plans").update({name:planForm.name.trim(),monthly_price:monthly,annual_price:annual,currency_code:planForm.currency_code.trim().toUpperCase().slice(0,3),is_active:planForm.is_active}).eq("id",editingPlan.id);\n  if(e)setError(e.message);else{await adminAudit("SUBSCRIPTION_PLAN_UPDATED","subscription_plans",editingPlan.id,editingPlan,{...editingPlan,...planForm,monthly_price:monthly,annual_price:annual});setEditingPlan(null);await load(false);}\n  setSaving(null);\n };
 
  return <AdminShell active="/settings">
   {error&&<div className="notice errorNotice">{error}</div>}
@@ -136,7 +136,7 @@ export default function Settings(){
    <div className="financeSectionGrid">
     <section className="card financePanel">
      <div className="panelHeader"><div><div className="panelTitle">Subscription & Billing Controls</div><div className="muted panelSubtitle">Current subscription catalogue and commercial defaults</div></div><span className="panelMeta">{plans.length} plans</span></div>
-     <div className="tableWrap settingsSubTable"><table><thead><tr><th>Plan</th><th>Monthly</th><th>Annual</th><th>Status</th></tr></thead><tbody>{plans.map(p=><tr key={p.id}><td><strong>{p.name}</strong><div className="muted">{p.code}</div></td><td>{p.currency_code} {Number(p.monthly_price||0).toLocaleString("en-IN")}</td><td>{p.currency_code} {Number(p.annual_price||0).toLocaleString("en-IN")}</td><td><span className={p.is_active?"badge good":"badge"}>{p.is_active?"Active":"Inactive"}</span></td></tr>)}</tbody></table></div>
+     <div className="tableWrap settingsSubTable"><table><thead><tr><th>Plan</th><th>Monthly</th><th>Annual</th><th>Status</th><th>Action</th></tr></thead><tbody>{plans.map(p=><tr key={p.id}><td><strong>{p.name}</strong><div className="muted">{p.code}</div></td><td>{p.currency_code} {Number(p.monthly_price||0).toLocaleString("en-IN")}</td><td>{p.currency_code} {Number(p.annual_price||0).toLocaleString("en-IN")}</td><td><span className={p.is_active?"badge good":"badge"}>{p.is_active?"Active":"Inactive"}</span></td><td><button className="linkButton" onClick={()=>openPlan(p)}>Edit</button></td></tr>)}</tbody></table></div>
     </section>
 
     <section className="card financePanel">
@@ -145,7 +145,7 @@ export default function Settings(){
     </section>
    </div>
 
-   <section className="card financePanel auditPanel">
+   {editingPlan&&<section className="card financePanel planEditorPanel">\n   <div className="panelHeader"><div><div className="panelTitle">Edit Subscription Plan</div><div className="muted panelSubtitle">Update commercial catalogue values stored in the platform.</div></div></div>\n   <div className="addAdminGrid">\n    <label>Plan Name<input className="input" value={planForm.name} onChange={e=>setPlanForm({...planForm,name:e.target.value})}/></label>\n    <label>Currency<input className="input" maxLength={3} value={planForm.currency_code} onChange={e=>setPlanForm({...planForm,currency_code:e.target.value})}/></label>\n    <label>Monthly Price<input className="input" type="number" min="0" value={planForm.monthly_price} onChange={e=>setPlanForm({...planForm,monthly_price:e.target.value})}/></label>\n    <label>Annual Price<input className="input" type="number" min="0" value={planForm.annual_price} onChange={e=>setPlanForm({...planForm,annual_price:e.target.value})}/></label>\n   </div>\n   <label className="switchRow"><input type="checkbox" checked={planForm.is_active} onChange={e=>setPlanForm({...planForm,is_active:e.target.checked})}/><span>{planForm.is_active?"Plan active":"Plan inactive"}</span></label>\n   <div className="addAdminActions"><button className="secondaryButton" onClick={()=>setEditingPlan(null)}>Cancel</button><button className="primaryButton" disabled={saving===editingPlan.id} onClick={savePlan}>{saving===editingPlan.id?"Saving...":"Save Plan"}</button></div>\n  </section>}\n\n  <section className="card financePanel auditPanel">
     <div className="panelHeader"><div><div className="panelTitle">Administrative Audit</div><div className="muted panelSubtitle">Recent platform configuration and access activity</div></div><span className="panelMeta">{audits.length} events</span></div>
     <div className="tableWrap settingsAuditTable"><table><thead><tr><th>Action</th><th>Entity</th><th>When</th></tr></thead><tbody>{audits.map(a=><tr key={a.id}><td><strong>{a.action}</strong></td><td>{a.entity_type||"—"}</td><td>{new Date(a.created_at).toLocaleString("en-IN")}</td></tr>)}</tbody></table>{!audits.length&&<div className="empty">No admin audit events yet.</div>}</div>
    </section>
