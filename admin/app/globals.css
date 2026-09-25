@@ -334,3 +334,22 @@ html,body{background:var(--admin-bg);font-family:Inter,ui-sans-serif,system-ui,-
 @media(max-width:480px){
   .financeKpis{grid-template-columns:1fr !important}
 }
+
+/* Organization — professional admin dashboard */
+.organizationKpis{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.organizationKpis .card{position:relative;min-width:0;height:100px;min-height:100px;padding:14px 15px 12px 17px;display:flex;flex-direction:column;border-radius:11px;overflow:hidden;box-shadow:0 2px 7px rgba(15,23,42,.035)}
+.organizationKpis .card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px}
+.organizationKpis .label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.055em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.organizationKpis .value{font-size:23px;line-height:1.05;margin-top:7px;font-weight:750}
+.organizationKpis .kpiHint{margin-top:auto;font-size:10px;color:#7b8798;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.organizationKpis .card:nth-child(1){background:linear-gradient(135deg,#eff6ff,#dbeafe);border-color:#bfdbfe}.organizationKpis .card:nth-child(1):before{background:#2563eb}.organizationKpis .card:nth-child(1) .value{color:#1d4ed8}
+.organizationKpis .card:nth-child(2){background:linear-gradient(135deg,#ecfdf5,#d1fae5);border-color:#a7f3d0}.organizationKpis .card:nth-child(2):before{background:#10b981}.organizationKpis .card:nth-child(2) .value{color:#047857}
+.organizationKpis .card:nth-child(3){background:linear-gradient(135deg,#f5f3ff,#ede9fe);border-color:#ddd6fe}.organizationKpis .card:nth-child(3):before{background:#7c3aed}.organizationKpis .card:nth-child(3) .value{color:#6d28d9}
+.organizationKpis .card:nth-child(4){background:linear-gradient(135deg,#f0fdfa,#ccfbf1);border-color:#99f6e4}.organizationKpis .card:nth-child(4):before{background:#14b8a6}.organizationKpis .card:nth-child(4) .value{color:#0f766e}
+.organizationTeam{margin-bottom:14px}
+.organizationTeam .tableWrap{max-height:410px;overflow:auto}
+.organizationLower{margin-bottom:0}
+.organizationLower .financePanel{margin-bottom:0}
+.organizationKpis .card:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(15,23,42,.07)}
+@media(max-width:900px){.organizationKpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.organizationKpis{grid-template-columns:1fr}.organizationKpis .card{height:96px;min-height:96px}}
