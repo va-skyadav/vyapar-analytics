@@ -187,3 +187,99 @@ html,body{background:var(--admin-bg);font-family:Inter,ui-sans-serif,system-ui,-
  .financePanel{padding:15px}
  .growthChart{gap:7px}
 }
+
+/* Finance KPI final alignment — six equal executive cards on desktop */
+.financeKpis{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:12px;
+  width:100%;
+  margin:0 0 18px;
+}
+.financeKpis .card{
+  min-width:0;
+  min-height:102px;
+  height:102px;
+  padding:14px 14px 12px 17px;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-start;
+}
+.financeKpis .label{
+  font-size:10px;
+  line-height:1.2;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.financeKpis .value{
+  font-size:24px;
+  line-height:1.05;
+  margin-top:8px;
+  white-space:nowrap;
+}
+.financeKpis .kpiHint{
+  margin-top:auto;
+  font-size:10px;
+  line-height:1.2;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+/* Distinct executive KPI colours */
+.financeKpis .card:nth-child(1){
+  background:linear-gradient(135deg,#eff6ff 0%,#dbeafe 100%);
+  border-color:#bfdbfe;
+}
+.financeKpis .card:nth-child(1):before{background:#2563eb}
+.financeKpis .card:nth-child(1) .value{color:#1d4ed8}
+
+.financeKpis .card:nth-child(2){
+  background:linear-gradient(135deg,#f5f3ff 0%,#ede9fe 100%);
+  border-color:#ddd6fe;
+}
+.financeKpis .card:nth-child(2):before{background:#7c3aed}
+.financeKpis .card:nth-child(2) .value{color:#6d28d9}
+
+.financeKpis .card:nth-child(3){
+  background:linear-gradient(135deg,#ecfdf5 0%,#d1fae5 100%);
+  border-color:#a7f3d0;
+}
+.financeKpis .card:nth-child(3):before{background:#10b981}
+.financeKpis .card:nth-child(3) .value{color:#047857}
+
+.financeKpis .card:nth-child(4){
+  background:linear-gradient(135deg,#fff7ed 0%,#ffedd5 100%);
+  border-color:#fed7aa;
+}
+.financeKpis .card:nth-child(4):before{background:#f97316}
+.financeKpis .card:nth-child(4) .value{color:#c2410c}
+
+.financeKpis .card:nth-child(5){
+  background:linear-gradient(135deg,#fff1f2 0%,#ffe4e6 100%);
+  border-color:#fecdd3;
+}
+.financeKpis .card:nth-child(5):before{background:#ef4444}
+.financeKpis .card:nth-child(5) .value{color:#be123c}
+
+.financeKpis .card:nth-child(6){
+  background:linear-gradient(135deg,#f0fdfa 0%,#ccfbf1 100%);
+  border-color:#99f6e4;
+}
+.financeKpis .card:nth-child(6):before{background:#14b8a6}
+.financeKpis .card:nth-child(6) .value{color:#0f766e}
+
+.financeKpis .card:hover{
+  transform:translateY(-1px);
+  box-shadow:0 6px 16px rgba(15,23,42,.07);
+}
+@media(max-width:1250px){
+  .financeKpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:700px){
+  .financeKpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .financeKpis .card{height:98px;min-height:98px}
+}
+@media(max-width:480px){
+  .financeKpis{grid-template-columns:1fr}
+}
