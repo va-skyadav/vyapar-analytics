@@ -37,6 +37,9 @@ export default function Organization(){
  const [editDescription,setEditDescription]=useState("");
  const [editPermissions,setEditPermissions]=useState<string[]>([]);
  const [savingRole,setSavingRole]=useState(false);
+ const [passwordAdmin,setPasswordAdmin]=useState<Admin|null>(null);
+ const [newPassword,setNewPassword]=useState("");
+ const [savingPassword,setSavingPassword]=useState(false);
 
  const load=useCallback(async(showLoading=true)=>{
   if(showLoading)setLoading(true);
@@ -112,14 +115,23 @@ export default function Organization(){
   setBusyId("");
  };
 
- const changePassword=async(admin:Admin)=>{
-  setError("");
-  const {error}=await supabase().auth.resetPasswordForEmail(admin.email,{redirectTo:window.location.origin+"/reset-password"});
-  if(error)setError(error.message);else setError("Password reset email sent to "+admin.email+".");
+ const changePassword=async()=>{
+  if(!passwordAdmin||newPassword.length<8){setError("Password must be at least 8 characters.");return;}
+  setSavingPassword(true);setError("");
+  const {data,error}=await supabase().functions.invoke("admin-change-password",{body:{target_user_id:passwordAdmin.user_id,password:newPassword}});
+  if(error||data?.error)setError(data?.error||error?.message||"Unable to change password.");
+  else{setPasswordAdmin(null);setNewPassword("");setError("Password changed successfully.");}
+  setSavingPassword(false);
  };
 
  return <AdminShell active="/organization">
-  {error&&<div className={error.startsWith("Password reset")?"notice":"notice errorNotice"}>{error}</div>}
+  {error&&<div className={error==="Password changed successfully."?"notice":"notice errorNotice"}>{error}</div>}
+  {passwordAdmin&&<section className="card financePanel addAdminPanel roleEditorPanel">
+   <div className="panelHeader"><div><div className="panelTitle">Change Administrator Password</div><div className="muted panelSubtitle">Direct password administration is available to VA Super Admin. No password-reset email or rate-limit wait is required.</div></div><button className="secondaryButton" onClick={()=>{setPasswordAdmin(null);setNewPassword("")}}>Close</button></div>
+   <div className="roleEditorHeader"><strong>{passwordAdmin.display_name}</strong><span className="muted">{passwordAdmin.email}</span></div>
+   <label>New password<input className="input" type="password" value={newPassword} onChange={e=>setNewPassword(e.target.value)} placeholder="Minimum 8 characters"/></label>
+   <div className="addAdminActions"><button className="secondaryButton" onClick={()=>{setPasswordAdmin(null);setNewPassword("")}}>Cancel</button><button className="primaryButton" disabled={savingPassword} onClick={changePassword}>{savingPassword?"Changing...":"Change Password"}</button></div>
+  </section>}
   {editingRole&&<section className="card financePanel addAdminPanel roleEditorPanel">
     <div className="panelHeader"><div><div className="panelTitle">Edit Role Rights & Responsibilities</div><div className="muted panelSubtitle">Only VA Super Admin can change the access profile used by administrators and Chief Executives.</div></div><button className="secondaryButton" onClick={()=>setEditingRole(null)}>Close</button></div>
     <div className="roleEditorHeader"><strong>{editingRole.name}</strong><span className="muted">{editingRole.code}</span></div>
@@ -162,7 +174,7 @@ export default function Organization(){
       <td>{admin.email}</td><td>{admin.role?.name||"Unassigned"}</td><td>{admin.department?.name||"Unassigned"}</td>
       <td><span className={admin.status==="active"?"badge good":"badge"}>{admin.status.toUpperCase()}</span></td>
       <td>{admin.role?.code==="SUPER_ADMIN"?<span className="protectedLabel">Protected</span>:<button className="linkButton" disabled={busyId===admin.id} onClick={()=>toggle(admin)}>{busyId===admin.id?"Saving...":admin.status==="active"?"Suspend":"Activate"}</button>}</td>
-      <td><button className="linkButton" onClick={()=>changePassword(admin)}>Change Password</button></td>
+      <td><button className="linkButton" onClick={()=>{setPasswordAdmin(admin);setNewPassword("");setError("")}}>Change Password</button></td>
      </tr>)}
     </tbody></table>{!filteredAdmins.length&&<div className="empty">{admins.length?"No administrators match the search.":"No admin users configured."}</div>}</div>
    </section>
