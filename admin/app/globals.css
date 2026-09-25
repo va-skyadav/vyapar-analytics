@@ -33,3 +33,24 @@
 .empty{padding:20px 4px;color:#64748b}
 @media(max-width:1000px){.sidebar{flex-basis:210px;width:210px}.main{width:calc(100% - 210px);padding:22px}.statsRow{grid-template-columns:repeat(2,minmax(0,1fr))}.customerToolbar{align-items:stretch;flex-direction:column}.customerControls{justify-content:flex-start}}
 @media(max-width:700px){.shell{display:block}.sidebar{width:100%;min-height:auto;padding:14px 16px}.brand{margin-bottom:12px}.nav{display:flex;overflow-x:auto;gap:6px}.nav a{white-space:nowrap}.main{width:100%;padding:18px}.top{align-items:flex-start;gap:14px}.topButton{min-width:92px}.statsRow{grid-template-columns:1fr}.customerControls{width:100%}.customerControls .select{flex:1}}
+
+/* Final Customers toolbar/header alignment */
+.top{gap:20px}
+.top>div:first-child{min-width:0}
+.topButton{width:auto!important;min-width:0!important;height:40px;padding:0 18px!important;flex:0 0 auto;white-space:nowrap}
+.customerToolbar{display:grid!important;grid-template-columns:minmax(0,1fr) 170px 100px;gap:12px;align-items:center;margin-bottom:18px}
+.customerSearch{min-width:0}
+.customerSearch .input{margin:0;width:100%;height:42px}
+.customerFilter{width:170px;height:42px}
+.refreshButton{width:100px!important;height:42px;padding:0 14px!important;white-space:nowrap}
+@media(max-width:700px){
+ .top{align-items:flex-start}
+ .topButton{height:38px;padding:0 14px!important}
+ .customerToolbar{grid-template-columns:minmax(0,1fr) 110px 88px;gap:8px}
+ .customerFilter{width:110px}
+ .refreshButton{width:88px!important}
+}
+@media(max-width:520px){
+ .customerToolbar{grid-template-columns:1fr;gap:8px}
+ .customerFilter,.refreshButton{width:100%!important}
+}
