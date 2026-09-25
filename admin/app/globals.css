@@ -353,3 +353,93 @@ html,body{background:var(--admin-bg);font-family:Inter,ui-sans-serif,system-ui,-
 .organizationKpis .card:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(15,23,42,.07)}
 @media(max-width:900px){.organizationKpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.organizationKpis{grid-template-columns:1fr}.organizationKpis .card{height:96px;min-height:96px}}
+
+/* Organization KPI — final colourful executive treatment */
+.organizationKpis{
+  display:grid !important;
+  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  gap:12px !important;
+  width:100% !important;
+}
+.organizationKpis .card{
+  position:relative !important;
+  min-width:0 !important;
+  width:100% !important;
+  height:104px !important;
+  min-height:104px !important;
+  padding:14px 15px 12px 18px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:flex-start !important;
+  border-radius:11px !important;
+  overflow:hidden !important;
+  box-shadow:0 2px 7px rgba(15,23,42,.04) !important;
+}
+.organizationKpis .card:before{
+  content:"" !important;
+  position:absolute !important;
+  left:0 !important;
+  top:0 !important;
+  bottom:0 !important;
+  width:5px !important;
+}
+.organizationKpis .label{
+  font-size:10px !important;
+  line-height:1.2 !important;
+  font-weight:750 !important;
+  text-transform:uppercase !important;
+  letter-spacing:.055em !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+.organizationKpis .value{
+  font-size:25px !important;
+  line-height:1 !important;
+  font-weight:750 !important;
+  margin-top:8px !important;
+  letter-spacing:-.025em !important;
+}
+.organizationKpis .kpiHint{
+  margin-top:auto !important;
+  font-size:10px !important;
+  line-height:1.2 !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+.organizationKpis .card:nth-child(1){
+  background:linear-gradient(135deg,#eff6ff 0%,#dbeafe 100%) !important;
+  border:1px solid #bfdbfe !important;
+}
+.organizationKpis .card:nth-child(1):before{background:#2563eb !important}
+.organizationKpis .card:nth-child(1) .value{color:#1d4ed8 !important}
+.organizationKpis .card:nth-child(2){
+  background:linear-gradient(135deg,#ecfdf5 0%,#d1fae5 100%) !important;
+  border:1px solid #a7f3d0 !important;
+}
+.organizationKpis .card:nth-child(2):before{background:#10b981 !important}
+.organizationKpis .card:nth-child(2) .value{color:#047857 !important}
+.organizationKpis .card:nth-child(3){
+  background:linear-gradient(135deg,#f5f3ff 0%,#ede9fe 100%) !important;
+  border:1px solid #ddd6fe !important;
+}
+.organizationKpis .card:nth-child(3):before{background:#7c3aed !important}
+.organizationKpis .card:nth-child(3) .value{color:#6d28d9 !important}
+.organizationKpis .card:nth-child(4){
+  background:linear-gradient(135deg,#f0fdfa 0%,#ccfbf1 100%) !important;
+  border:1px solid #99f6e4 !important;
+}
+.organizationKpis .card:nth-child(4):before{background:#14b8a6 !important}
+.organizationKpis .card:nth-child(4) .value{color:#0f766e !important}
+.organizationKpis .card:hover{
+  transform:translateY(-1px) !important;
+  box-shadow:0 7px 18px rgba(15,23,42,.08) !important;
+}
+@media(max-width:900px){
+  .organizationKpis{grid-template-columns:repeat(2,minmax(0,1fr)) !important}
+}
+@media(max-width:520px){
+  .organizationKpis{grid-template-columns:1fr !important}
+  .organizationKpis .card{height:98px !important;min-height:98px !important}
+}
