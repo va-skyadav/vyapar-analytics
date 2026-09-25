@@ -1,5 +1,5 @@
 "use client";
-import {useEffect,useState} from "react";
+import {use,useEffect,useState} from "react";
 import AdminShell from "../../../components/admin-shell";
 import {supabase} from "../../../lib/supabase";
 
@@ -7,11 +7,11 @@ type Data={business:any;owner:any;subscription:any;usage:any[];issues:any[];paym
 const money=(v:any)=>new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:0}).format(Number(v||0));
 const fmt=(v:any)=>v?new Date(v).toLocaleString("en-IN"):"—";
 
-export default async function CustomerDetail({params}:{params:Promise<{id:string}>}){
- const [data,setData]=useState<Data|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState("");
- const load=async()=>{setLoading(true);const {data,error}=await supabase().rpc("get_admin_customer_360",{p_business_id:params.id});if(error)setError(error.message);else setData(data as Data);setLoading(false)};
- useEffect(()=>{load()},[params.id]);
- const setStatus=async(status:"ACTIVE"|"SUSPENDED"|"OFFBOARDED")=>{const reason=window.prompt("Reason (optional):")??null;const {error}=await supabase().rpc("admin_set_customer_lifecycle",{p_business_id:params.id,p_status:status,p_reason:reason});if(error)setError(error.message);else load()};
+export default function CustomerDetail({params}:{params:Promise<{id:string}>}){
+ const {id}=use(params);\n const [data,setData]=useState<Data|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState("");
+ const load=async()=>{setLoading(true);const {data,error}=await supabase().rpc("get_admin_customer_360",{p_business_id:id});if(error)setError(error.message);else setData(data as Data);setLoading(false)};
+ useEffect(()=>{load()},[id]);
+ const setStatus=async(status:"ACTIVE"|"SUSPENDED"|"OFFBOARDED")=>{const reason=window.prompt("Reason (optional):")??null;const {error}=await supabase().rpc("admin_set_customer_lifecycle",{p_business_id:id,p_status:status,p_reason:reason});if(error)setError(error.message);else load()};
  if(loading)return <AdminShell active="/customers"><div className="card">Loading customer...</div></AdminShell>;
  if(error||!data)return <AdminShell active="/customers"><div className="notice">{error||"Customer not found"}</div><a className="linkButton" href="/customers">← Back to Customers</a></AdminShell>;
  const b=data.business,sub=data.subscription,owner=data.owner;
