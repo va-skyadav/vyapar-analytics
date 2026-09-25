@@ -443,3 +443,23 @@ html,body{background:var(--admin-bg);font-family:Inter,ui-sans-serif,system-ui,-
   .organizationKpis{grid-template-columns:1fr !important}
   .organizationKpis .card{height:98px !important;min-height:98px !important}
 }
+
+/* Settings & Platform — professional admin dashboard */
+.settingsKpis{display:grid !important;grid-template-columns:repeat(4,minmax(0,1fr)) !important;gap:12px !important;width:100% !important;margin-bottom:18px !important}
+.settingsKpis .card{position:relative !important;min-width:0 !important;width:100% !important;height:104px !important;min-height:104px !important;padding:14px 15px 12px 18px !important;display:flex !important;flex-direction:column !important;border-radius:11px !important;overflow:hidden !important;box-shadow:0 2px 7px rgba(15,23,42,.04) !important}
+.settingsKpis .card:before{content:"" !important;position:absolute !important;left:0 !important;top:0 !important;bottom:0 !important;width:5px !important}
+.settingsKpis .label{font-size:10px !important;line-height:1.2 !important;font-weight:750 !important;text-transform:uppercase !important;letter-spacing:.055em !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important}
+.settingsKpis .value{font-size:25px !important;line-height:1 !important;font-weight:750 !important;margin-top:8px !important}
+.settingsKpis .kpiHint{margin-top:auto !important;font-size:10px !important;line-height:1.2 !important;color:#7b8798 !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important}
+.settingsKpis .card:nth-child(1){background:linear-gradient(135deg,#eff6ff,#dbeafe) !important;border:1px solid #bfdbfe !important}.settingsKpis .card:nth-child(1):before{background:#2563eb !important}.settingsKpis .card:nth-child(1) .value{color:#1d4ed8 !important}
+.settingsKpis .card:nth-child(2){background:linear-gradient(135deg,#f5f3ff,#ede9fe) !important;border:1px solid #ddd6fe !important}.settingsKpis .card:nth-child(2):before{background:#7c3aed !important}.settingsKpis .card:nth-child(2) .value{color:#6d28d9 !important}
+.settingsKpis .card:nth-child(3){background:linear-gradient(135deg,#ecfdf5,#d1fae5) !important;border:1px solid #a7f3d0 !important}.settingsKpis .card:nth-child(3):before{background:#10b981 !important}.settingsKpis .card:nth-child(3) .value{color:#047857 !important}
+.settingsKpis .card:nth-child(4){background:linear-gradient(135deg,#fff7ed,#ffedd5) !important;border:1px solid #fed7aa !important}.settingsKpis .card:nth-child(4):before{background:#f97316 !important}.settingsKpis .card:nth-child(4) .value{color:#c2410c !important}
+.settingsKpis .card:hover{transform:translateY(-1px) !important;box-shadow:0 7px 18px rgba(15,23,42,.08) !important}
+.settingsPanel{margin-bottom:14px}
+.settingsSearch{width:240px}.settingsSearch .input{height:36px;margin:0;width:100%;font-size:12px}
+.settingsTable{max-height:390px;overflow:auto}.settingsTable .inlineInput{margin:0;width:100%;min-width:220px;height:34px;font-size:12px}
+.settingsSubTable{max-height:360px;overflow:auto}
+.settingsLower{margin-bottom:0}
+@media(max-width:900px){.settingsKpis{grid-template-columns:repeat(2,minmax(0,1fr)) !important}.settingsSearch{width:190px}}
+@media(max-width:600px){.settingsKpis{grid-template-columns:1fr !important}.settingsKpis .card{height:98px !important;min-height:98px !important}.panelHeader{flex-direction:column}.settingsSearch{width:100%}}
