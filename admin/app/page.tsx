@@ -2,6 +2,7 @@
 
 import {useCallback,useEffect,useState} from "react";
 import {supabase} from "../lib/supabase";
+import {notifyAdminRefreshComplete,useAdminRefresh} from "../lib/admin-refresh";
 import AdminShell from "../components/admin-shell";
 
 type Metrics={total_customers:number;active_customers:number;trial_customers:number;cancelled_or_expired_subscriptions:number;mrr:number;arr:number;new_customers_this_month:number;marketing_spend_this_month:number;leads_this_month:number;conversions_this_month:number;cac_this_month:number|null;forecast_data_status:string};
@@ -12,8 +13,8 @@ const money=(v:number)=>new Intl.NumberFormat("en-IN",{style:"currency",currency
 export default function Home(){
  const [metrics,setMetrics]=useState<Metrics|null>(null),[ops,setOps]=useState<Ops|null>(null),[growth,setGrowth]=useState<Growth[]>([]);
  const [loading,setLoading]=useState(true),[error,setError]=useState("");
- const load=useCallback(async()=>{
-  setLoading(true);setError("");
+ const load=useCallback(async(showLoading=true)=>{
+  if(showLoading)setLoading(true);setError("");
   const s=supabase();const {data:{user}}=await s.auth.getUser();if(!user){location.href="/login";return}
   const [summary,operational,growthData]=await Promise.all([s.rpc("get_admin_dashboard_summary"),s.rpc("get_admin_dashboard_operational"),s.rpc("get_admin_customer_growth")]);
   const err=summary.error||operational.error||growthData.error;
