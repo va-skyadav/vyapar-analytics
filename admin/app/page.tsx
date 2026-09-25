@@ -12,7 +12,7 @@ const money=(v:number)=>new Intl.NumberFormat("en-IN",{style:"currency",currency
 export default function Home(){
  const [metrics,setMetrics]=useState<Metrics|null>(null),[ops,setOps]=useState<Ops|null>(null),[growth,setGrowth]=useState<Growth[]>([]);
  const [loading,setLoading]=useState(true),[error,setError]=useState("");
- const load=useCallback(async(first=false)=>{
+ const load=useCallback(async()=>{
   setLoading(true);setError("");
   const s=supabase();const {data:{user}}=await s.auth.getUser();if(!user){location.href="/login";return}
   const [summary,operational,growthData]=await Promise.all([s.rpc("get_admin_dashboard_summary"),s.rpc("get_admin_dashboard_operational"),s.rpc("get_admin_customer_growth")]);
@@ -20,10 +20,10 @@ export default function Home(){
   if(err)setError(err.message);else{setMetrics(summary.data?.[0]??null);setOps(operational.data?.[0]??null);setGrowth(growthData.data??[])}
   setLoading(false);
  },[]);
- useEffect(()=>{load(true)},[load]);
+ useEffect(()=>{load()},[load]);
  if(loading)return <AdminShell active="/"><div className="card">Loading dashboard...</div></AdminShell>;
  return <AdminShell active="/">
-  <div className="dashboardHeader"><div><div className="title">Business overview</div><div className="muted">Platform performance, customers and commercial activity.</div></div><div className="headerActions"><button className="secondaryButton" onClick={()=>load(false)} disabled={refreshing}>{refreshing?"Refreshing...":"Refresh"}</button><span className="muted smallText">{lastUpdated?"Updated "+lastUpdated.toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}):""}</span></div></div>{error&&<div className="notice errorNotice">{error}</div>}
+  {error&&<div className="notice errorNotice">{error}</div>}
   {metrics&&ops&&<>
    <div className="sectionTitle">Commercial Snapshot</div>
    <div className="dashboardGrid">
