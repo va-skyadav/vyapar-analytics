@@ -154,3 +154,18 @@ export default function Settings(){
 
    {activeTab==="audit"&&<section className="card financePanel settingsTabPanel auditPanel"><div className="panelHeader"><div><div className="panelTitle">Administrative Audit Log</div><div className="muted panelSubtitle">Recent platform configuration and access activity.</div></div><span className="panelMeta">{audits.length} events</span></div><div className="tableWrap settingsAuditTable"><table><thead><tr><th>Action</th><th>Entity</th><th>When</th></tr></thead><tbody>{audits.map(a=><tr key={a.id}><td><strong>{a.action}</strong></td><td>{a.entity_type||"—"}</td><td>{new Date(a.created_at).toLocaleString("en-IN")}</td></tr>)}</tbody></table>{!audits.length&&<div className="empty">No admin audit events yet.</div>}</div></section>}
 
+
+   {activeTab==="billing"&&editingPlan&&<section className="card financePanel planEditorPanel">
+    <div className="panelHeader"><div><div className="panelTitle">Edit Subscription Plan</div><div className="muted panelSubtitle">Update commercial catalogue values stored in the platform.</div></div></div>
+    <div className="addAdminGrid">
+     <label>Plan Name<input className="input" value={planForm.name} onChange={e=>setPlanForm({...planForm,name:e.target.value})}/></label>
+     <label>Currency<input className="input" maxLength={3} value={planForm.currency_code} onChange={e=>setPlanForm({...planForm,currency_code:e.target.value})}/></label>
+     <label>Monthly Price<input className="input" type="number" min="0" value={planForm.monthly_price} onChange={e=>setPlanForm({...planForm,monthly_price:e.target.value})}/></label>
+     <label>Annual Price<input className="input" type="number" min="0" value={planForm.annual_price} onChange={e=>setPlanForm({...planForm,annual_price:e.target.value})}/></label>
+    </div>
+    <label className="switchRow"><input type="checkbox" checked={planForm.is_active} onChange={e=>setPlanForm({...planForm,is_active:e.target.checked})}/><span>{planForm.is_active?"Plan active":"Plan inactive"}</span></label>
+    <div className="addAdminActions"><button className="secondaryButton" onClick={()=>setEditingPlan(null)}>Cancel</button><button className="primaryButton" disabled={saving===editingPlan.id} onClick={savePlan}>{saving===editingPlan.id?"Saving...":"Save Plan"}</button></div>
+   </section>}
+  </>}
+ </AdminShell>;
+}
