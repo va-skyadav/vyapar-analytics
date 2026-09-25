@@ -121,3 +121,17 @@ html,body{background:var(--admin-bg);font-family:Inter,ui-sans-serif,system-ui,-
 .lastRefreshed{font-size:12px;color:var(--admin-muted);white-space:nowrap}
 
 .topRefreshButton:disabled{opacity:.85;cursor:wait}.refreshSpin{animation:adminRefreshSpin .8s linear infinite}@keyframes adminRefreshSpin{to{transform:rotate(360deg)}}
+
+/* Finance & Growth — compact colorful KPI system */
+.financeKpis{gap:12px}
+.financeKpis .card{position:relative;min-height:94px;padding:13px 15px;border:1px solid #e8edf4;border-radius:11px;overflow:hidden;box-shadow:0 2px 6px rgba(15,23,42,.035)}
+.financeKpis .card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px}.financeKpis .label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.055em}.financeKpis .value{font-size:22px;line-height:1.1;font-weight:750;margin-top:6px}.kpiHint{font-size:10.5px;color:#7b8798;margin-top:6px}
+.financeKpis .card:nth-child(1){background:#eff6ff}.financeKpis .card:nth-child(1):before{background:#2563eb}.financeKpis .card:nth-child(1) .value{color:#1d4ed8}
+.financeKpis .card:nth-child(2){background:#f5f3ff}.financeKpis .card:nth-child(2):before{background:#7c3aed}.financeKpis .card:nth-child(2) .value{color:#6d28d9}
+.financeKpis .card:nth-child(3){background:#ecfdf5}.financeKpis .card:nth-child(3):before{background:#10b981}.financeKpis .card:nth-child(3) .value{color:#047857}
+.financeKpis .card:nth-child(4){background:#fff7ed}.financeKpis .card:nth-child(4):before{background:#f97316}.financeKpis .card:nth-child(4) .value{color:#c2410c}
+.financeKpis .card:nth-child(5){background:#fff1f2}.financeKpis .card:nth-child(5):before{background:#ef4444}.financeKpis .card:nth-child(5) .value{color:#be123c}
+.financeKpis .card:nth-child(6){background:#f0fdfa}.financeKpis .card:nth-child(6):before{background:#14b8a6}.financeKpis .card:nth-child(6) .value{color:#0f766e}
+.tableSubtitle{font-size:12px;margin:-5px 0 10px}.financeTables{gap:14px}
+@media(max-width:900px){.financeKpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.financeKpis{grid-template-columns:1fr}}
