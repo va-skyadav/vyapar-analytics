@@ -15,10 +15,22 @@ export default function Home(){
  const [loading,setLoading]=useState(true),[error,setError]=useState("");
  const load=useCallback(async(showLoading=true)=>{
   if(showLoading)setLoading(true);setError("");
-  const s=supabase();const {data:{user}}=await s.auth.getUser();if(!user){location.href="/login";return}
-  const [summary,operational,growthData]=await Promise.all([s.rpc("get_admin_dashboard_summary"),s.rpc("get_admin_dashboard_operational"),s.rpc("get_admin_customer_growth")]);
-  const err=summary.error||operational.error||growthData.error;
-  if(err)setError(err.message);else{setMetrics(summary.data?.[0]??null);setOps(operational.data?.[0]??null);setGrowth(growthData.data??[])}
+  const client=supabase();
+  const {data:{user}}=await client.auth.getUser();
+  if(!user){location.href="/login";return}
+  const [summaryRes,operationalRes,growthRes]=await Promise.all([
+   client.rpc("get_admin_dashboard_summary"),
+   client.rpc("get_admin_dashboard_operational"),
+   client.rpc("get_admin_customer_growth")
+  ]);
+  const firstError=summaryRes.error||operationalRes.error||growthRes.error;
+  if(firstError){
+   setError(firstError.message);
+  }else{
+   setMetrics(summaryRes.data?.[0]??null);
+   setOps(operationalRes.data?.[0]??null);
+   setGrowth(growthRes.data??[]);
+  }
   setLoading(false);notifyAdminRefreshComplete();
  },[]);
  useEffect(()=>{load()},[load]);
@@ -51,4 +63,3 @@ export default function Home(){
 }
 function Metric({label,value,detail,alert=false}:{label:string;value:string;detail:string;alert?:boolean}){return <div className={alert?"metricCard attention":"metricCard"}><div className="label">{label}</div><div className="metricValue">{value}</div><div className="metricDetail">{detail}</div></div>}
 function HealthRow({label,value,warn=false,danger=false}:{label:string;value:number;warn?:boolean;danger?:boolean}){return <div className="healthRow"><span>{label}</span><strong className={danger&&value>0?"danger":warn&&value>0?"warning":""}>{value.toLocaleString()}</strong></div>}
-
