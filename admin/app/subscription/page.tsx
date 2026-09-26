@@ -47,7 +47,7 @@ export default function Subscription(){
    s.from("business_subscriptions").select("id,business_id,plan_id,status,current_period_end,cancel_at_period_end,businesses(name),subscription_plans(name)").order("created_at",{ascending:false}).limit(100),
    s.from("subscription_billing_settings").select("*").limit(1).maybeSingle()
   ]);
-  const first=p.error||m.error||o.error||sub.error||b.error;
+  const first=p.error||m.error||o.error||op.error||sub.error||b.error;
   if(first)setError(first.message);
   else{const map:Record<string,string[]>={};(op.data||[]).forEach((x:any)=>{(map[x.offer_id] ||= []).push(x.plan_id)});setPlans(p.data||[]);setModules(m.data||[]);setOffers(o.data||[]);setOfferPlanIds(map);setSubscriptions((sub.data||[]) as Subscription[]);setBilling(b.data||null);}
   if(show)setLoading(false);notifyAdminRefreshComplete();
@@ -73,14 +73,14 @@ export default function Subscription(){
   const monthly=Number(planForm.monthly_price),annual=Number(planForm.annual_price);
   if(!planForm.code.trim()||!planForm.name.trim()){setError("Plan code and name are required.");return;}
   if(!Number.isFinite(monthly)||monthly<0||!Number.isFinite(annual)||annual<0){setError("Plan prices must be valid non-negative numbers.");return;}
-  let limits:any,features:any;try{limits=JSON.parse(planForm.limits||"{}");features=JSON.parse(planForm.features||"{}")}catch{setError("Limits and feature entitlements must be valid JSON.");return;}
+  let limits:any,features:any,overage_config:any;try{limits=JSON.parse(planForm.limits||"{}");features=JSON.parse(planForm.features||"{}");overage_config=JSON.parse(planForm.overage_config||"{}")}catch{setError("Plan limits, entitlements and overage rules must be valid JSON.");return;}
   setSaving("plan");setError("");const s=supabase();
   let planId=editingPlan?.id;
   if(editingPlan){
-   const {error:e}=await s.from("subscription_plans").update({code:planForm.code.trim().toLowerCase(),name:planForm.name.trim(),monthly_price:monthly,annual_price:annual,currency_code:planForm.currency_code.trim().toUpperCase().slice(0,3),billing_model:planForm.billing_model,setup_fee:Number(planForm.setup_fee)||0,trial_days:Number(planForm.trial_days)||0,minimum_seats:Number(planForm.minimum_seats)||1,included_seats:Number(planForm.included_seats)||1,overage_enabled:planForm.overage_enabled,overage_config:JSON.parse(planForm.overage_config||"{}"),is_featured:planForm.is_featured,public_visible:planForm.public_visible,display_order:Number(planForm.display_order)||0,is_active:planForm.is_active,description:planForm.description.trim(),limits,features}).eq("id",editingPlan.id);
+   const {error:e}=await s.from("subscription_plans").update({code:planForm.code.trim().toLowerCase(),name:planForm.name.trim(),monthly_price:monthly,annual_price:annual,currency_code:planForm.currency_code.trim().toUpperCase().slice(0,3),billing_model:planForm.billing_model,setup_fee:Number(planForm.setup_fee)||0,trial_days:Number(planForm.trial_days)||0,minimum_seats:Number(planForm.minimum_seats)||1,included_seats:Number(planForm.included_seats)||1,overage_enabled:planForm.overage_enabled,overage_config,is_featured:planForm.is_featured,public_visible:planForm.public_visible,display_order:Number(planForm.display_order)||0,is_active:planForm.is_active,description:planForm.description.trim(),limits,features}).eq("id",editingPlan.id);
    if(e){setError(e.message);setSaving("");return}
   }else{
-   const {data,e}=await s.from("subscription_plans").insert({code:planForm.code.trim().toLowerCase(),name:planForm.name.trim(),monthly_price:monthly,annual_price:annual,currency_code:planForm.currency_code.trim().toUpperCase().slice(0,3),is_active:planForm.is_active,description:planForm.description.trim(),limits,features}).select("id").single();
+   const {data,e}=await s.from("subscription_plans").insert({code:planForm.code.trim().toLowerCase(),name:planForm.name.trim(),monthly_price:monthly,annual_price:annual,currency_code:planForm.currency_code.trim().toUpperCase().slice(0,3),billing_model:planForm.billing_model,setup_fee:Number(planForm.setup_fee)||0,trial_days:Number(planForm.trial_days)||0,minimum_seats:Number(planForm.minimum_seats)||1,included_seats:Number(planForm.included_seats)||1,overage_enabled:planForm.overage_enabled,overage_config,is_featured:planForm.is_featured,public_visible:planForm.public_visible,display_order:Number(planForm.display_order)||0,is_active:planForm.is_active,description:planForm.description.trim(),limits,features}).select("id").single();
    if(e){setError(e.message);setSaving("");return} planId=data.id;
   }
   if(planId){
