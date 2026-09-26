@@ -1,5 +1,6 @@
 import { BarChart3, Calculator, Boxes, Users, ReceiptText, BrainCircuit, LogOut } from "lucide-react";
 import type { ReactNode } from "react";
+import BrandDisplay from "./brand-display";
 
 const modules = [
   { label: "Analytics", href: "/", icon: BarChart3 },
@@ -13,7 +14,7 @@ const modules = [
 export function AppShell({ businessName, title, children }: { businessName: string; title: string; children: ReactNode }) {
   return <div className="dashboard">
     <aside className="sidebar">
-      <div className="brand">Vyapar Analytics<span>Business Intelligence Platform</span></div>
+      <BrandDisplay />
       <nav className="nav" aria-label="Primary navigation">
         {modules.map(({ label, href, icon: Icon }) => <a key={label} href={href} className={`navItem ${title === label ? "active" : ""}`}><Icon size={18} strokeWidth={1.8}/>{label}</a>)}
       </nav>
