@@ -44,17 +44,25 @@ export default function Organization(){
  const load=useCallback(async(showLoading=true)=>{
   if(showLoading)setLoading(true);
   setError("");
-  const s=supabase();
-  const [a,r,d,p]=await Promise.all([
-   s.rpc("get_admin_users_directory"),
-   s.from("admin_roles").select("id,code,name,description,is_active").order("name"),
-   s.from("admin_departments").select("id,name,is_active").order("name"),
-   s.rpc("get_admin_role_rights")
+  const client=supabase();
+  const [adminsRes,rolesRes,departmentsRes,rightsRes]=await Promise.all([
+   client.rpc("get_admin_users_directory"),
+   client.from("admin_roles").select("id,code,name,description,is_active").order("name"),
+   client.from("admin_departments").select("id,name,is_active").order("name"),
+   client.rpc("get_admin_role_rights")
   ]);
-  if(a.error||r.error||d.error||p.error)setError(a.error?.message||r.error?.message||d.error?.message||p.error?.message||"Unable to load organization data");
-  else{
-   setAdmins((a.data||[]).map((x:any)=>({...x,role:x.role_code?{code:x.role_code,name:x.role_name}:null,department:x.department_name?{name:x.department_name}:null})));
-   setRoles(r.data||[]);setDepts(d.data||[]);setRights(p.data||[]);
+  const firstError=adminsRes.error||rolesRes.error||departmentsRes.error||rightsRes.error;
+  if(firstError){
+   setError(firstError.message||"Unable to load organization data");
+  }else{
+   setAdmins((adminsRes.data||[]).map((adminRecord:any)=>({
+    ...adminRecord,
+    role:adminRecord.role_code?{code:adminRecord.role_code,name:adminRecord.role_name}:null,
+    department:adminRecord.department_name?{name:adminRecord.department_name}:null
+   })));
+   setRoles(rolesRes.data||[]);
+   setDepts(departmentsRes.data||[]);
+   setRights(rightsRes.data||[]);
   }
   if(showLoading)setLoading(false);
   notifyAdminRefreshComplete();
