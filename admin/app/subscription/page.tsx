@@ -49,7 +49,9 @@ export default function Subscription(){
    s.from("subscription_offers").select("*").order("created_at",{ascending:false}),
    s.from("subscription_offer_plans").select("offer_id,plan_id"),
    s.from("business_subscriptions").select("id,business_id,plan_id,status,current_period_end,cancel_at_period_end,businesses(name),subscription_plans(name)").order("created_at",{ascending:false}).limit(100),
-   s.from("subscription_billing_settings").select("*").limit(1).maybeSingle()
+   s.from("subscription_billing_settings").select("*").limit(1).maybeSingle(),
+   s.from("billing_company_profile").select("*").limit(1).maybeSingle(),
+   s.from("billing_payment_methods").select("*").order("is_default",{ascending:false}).order("display_name")
   ]);
   const first=p.error||m.error||o.error||op.error||sub.error||b.error||cp.error||pm.error;
   if(first)setError(first.message);
