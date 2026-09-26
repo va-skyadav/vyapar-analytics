@@ -30,7 +30,7 @@ export default function Settings(){
  const [activeTab,setActiveTab]=useState("configuration");
  const brandSetting=(key:string)=>settings.find(s=>s.key===key);
  const brandValue=(key:string,fallback:string)=>{const v=brandSetting(key)?.value;return typeof v==="string"?v:fallback};
- const saveBrandValue=async(key:string,value:string|null)=>{const s=brandSetting(key);if(!s)return;await saveSetting({...s,value});window.dispatchEvent(new Event("brand-settings-updated"));};
+ const saveBrandValue=async(key:string,value:string|null)=>{const s=brandSetting(key);if(!s)return;await saveSetting({...s,value});setSettings(x=>x.map(v=>v.id===s.id?{...v,value}:v));window.dispatchEvent(new Event("brand-settings-updated"));};
  const uploadBrandAsset=async(key:string,file:File)=>{setSaving(key);setError("");const ext=file.name.split(".").pop()?.toLowerCase()||"png";const path=key+"-"+Date.now()+"."+ext;const client=supabase();const up=await client.storage.from("brand-assets").upload(path,file,{upsert:true,contentType:file.type});if(up.error){setError(up.error.message);setSaving(null);return}const {data}=client.storage.from("brand-assets").getPublicUrl(path);await saveBrandValue(key,data.publicUrl);setSaving(null);};
 
  const load=useCallback(async(showLoading=true)=>{
