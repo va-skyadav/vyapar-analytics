@@ -4,7 +4,7 @@ import {LogOut,RefreshCw} from "lucide-react";
 import {supabase} from "../lib/supabase";
 import {ADMIN_REFRESH_COMPLETE_EVENT,ADMIN_REFRESH_EVENT} from "../lib/admin-refresh";
 
-const links=[["/","Business Overview","dashboard.view"],["/customers","Customers","customers.view"],["/finance","Finance & Growth","finance.view"],["/organization","Organization","roles.manage"],["/settings","Settings & Platform","platform.manage"]];
+const links=[["/","Business Overview","dashboard.view"],["/subscription","Subscription & Billing","platform.manage"],["/customers","Customers","customers.view"],["/finance","Finance & Growth","finance.view"],["/organization","Organization","roles.manage"],["/settings","Settings & Platform","platform.manage"]];
 
 export default function AdminShell({active,children}:{active:string;children:React.ReactNode}){
   const [checking,setChecking]=useState(true);
@@ -17,7 +17,7 @@ export default function AdminShell({active,children}:{active:string;children:Rea
   useEffect(()=>{setLastRefreshed(new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}))},[]);
   useEffect(()=>{const done=()=>{setRefreshing(false);setLastRefreshed(new Date().toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}))};window.addEventListener(ADMIN_REFRESH_COMPLETE_EVENT,done);return()=>window.removeEventListener(ADMIN_REFRESH_COMPLETE_EVENT,done)},[]);
   const refresh=()=>{if(refreshing)return;setRefreshing(true);window.dispatchEvent(new Event(ADMIN_REFRESH_EVENT));setTimeout(()=>setRefreshing(false),15000)};
-  const pageInfo=active==="/customers"?["Customers","Customer accounts, subscriptions and support"]:active==="/finance"?["Finance & Growth","Revenue, plans, acquisition and commercial performance"]:active==="/organization"?["Organization","Admin users, roles and organizational controls"]:active==="/settings"?["Settings & Platform","Permissions, configuration and platform audit"]:[ "Business Overview","Platform performance, customers and commercial activity" ];
+  const pageInfo=active==="/subscription"?["Subscription & Billing","Plans, pricing, entitlements and billing controls"]:active==="/customers"?["Customers","Customer accounts, subscriptions and support"]:active==="/finance"?["Finance & Growth","Revenue, plans, acquisition and commercial performance"]:active==="/organization"?["Organization","Admin users, roles and organizational controls"]:active==="/settings"?["Settings & Platform","Permissions, configuration and platform audit"]:[ "Business Overview","Platform performance, customers and commercial activity" ];
   const allowedLinks=links.filter(([,label,permission])=>permissions.includes(permission)||(roleCode==="SUPER_ADMIN"));
   const activeAllowed=allowedLinks.some(([href])=>href===active);
   useEffect(()=>{if(!checking&&!activeAllowed){const fallback=allowedLinks[0]?.[0]||"/login";if(active!==fallback)location.replace(fallback)}},[checking,activeAllowed,active,allowedLinks]);
