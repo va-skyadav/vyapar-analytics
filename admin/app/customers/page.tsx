@@ -11,11 +11,28 @@ type EditState={discount_type:"percentage"|"fixed";discount_value:string;reason:
 
 export default function Customers(){
  const [rows,setRows]=useState<Customer[]>([]),[issues,setIssues]=useState<Issue[]>([]),[overrides,setOverrides]=useState<Record<string,Override>>({}),[editing,setEditing]=useState<string|null>(null),[edit,setEdit]=useState<EditState>({discount_type:"percentage",discount_value:"",reason:"",valid_until:""}),[q,setQ]=useState(""),[filter,setFilter]=useState("ALL"),[loading,setLoading]=useState(true),[error,setError]=useState("");
- const load=async(showLoading=true)=>{if(showLoading)setLoading(true);setError("");const s=supabase();const [b,i,o]=await Promise.all([
-  s.from("businesses").select("id,name,legal_name,business_type,industry,email,phone,is_active,lifecycle_status,created_at").order("created_at",{ascending:false}),
-  s.from("support_issues").select("id,business_id,title,priority,status,created_at").order("created_at",{ascending:false}).limit(20),
-  s.from("business_commercial_overrides").select("business_id,discount_type,discount_value,reason,valid_until,is_active")
- ]);if(b.error||i.error||o.error)setError(b.error?.message||i.error?.message||o.error?.message||"Unable to load customer data");else{setRows(b.data||[]);setIssues(i.data||[]);const map:Record<string,Override>={};(o.data||[]).forEach((x:any)=>{map[x.business_id]=x});setOverrides(map)}setLoading(false);notifyAdminRefreshComplete()};
+ const load=async(showLoading=true)=>{
+  if(showLoading)setLoading(true);
+  setError("");
+  const client=supabase();
+  const [businessesRes,issuesRes,overridesRes]=await Promise.all([
+   client.from("businesses").select("id,name,legal_name,business_type,industry,email,phone,is_active,lifecycle_status,created_at").order("created_at",{ascending:false}),
+   client.from("support_issues").select("id,business_id,title,priority,status,created_at").order("created_at",{ascending:false}).limit(20),
+   client.from("business_commercial_overrides").select("business_id,discount_type,discount_value,reason,valid_until,is_active")
+  ]);
+  const firstError=businessesRes.error||issuesRes.error||overridesRes.error;
+  if(firstError){
+   setError(firstError.message||"Unable to load customer data");
+  }else{
+   setRows(businessesRes.data||[]);
+   setIssues(issuesRes.data||[]);
+   const overrideMap:Record<string,Override>={};
+   (overridesRes.data||[]).forEach((override)=>{overrideMap[override.business_id]=override});
+   setOverrides(overrideMap);
+  }
+  setLoading(false);
+  notifyAdminRefreshComplete();
+ };
  useEffect(()=>{load()},[]);
  const filtered=useMemo(()=>rows.filter(r=>(filter==="ALL"||r.lifecycle_status===filter)&&(!q||[r.name,r.legal_name,r.email,r.phone,r.industry].filter(Boolean).join(" ").toLowerCase().includes(q.toLowerCase()))),[rows,q,filter]);
  const setStatus=async(r:Customer,status:Customer["lifecycle_status"])=>{const reason=window.prompt("Reason (optional):")??null;const {data,error}=await supabase().rpc("admin_set_customer_lifecycle",{p_business_id:r.id,p_status:status,p_reason:reason});if(error){setError(error.message);return}setRows(x=>x.map(v=>v.id===r.id?{...v,lifecycle_status:status,is_active:status==="ACTIVE"}:v));};
