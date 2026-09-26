@@ -8,7 +8,9 @@ import {notifyAdminRefreshComplete,useAdminRefresh} from "../../lib/admin-refres
 type Plan={id:string;code:string;name:string;monthly_price:number;annual_price:number;currency_code:string;limits:any;features:any;is_active:boolean;description?:string|null;billing_model:string;setup_fee:number;trial_days:number;minimum_seats:number;included_seats:number;overage_enabled:boolean;overage_config:any;is_featured:boolean;public_visible:boolean;display_order:number};
 type Module={id?:string;plan_id:string;module_code:string;module_name:string;enabled:boolean;limit_value:number|null;limit_unit:string|null;notes:string|null};
 type Offer={id:string;code:string;name:string;description:string|null;offer_type:string;discount_type:string;discount_value:number;buy_quantity:number|null;free_quantity:number|null;trial_days:number|null;credit_amount:number|null;starts_at:string|null;ends_at:string|null;max_redemptions:number|null;max_redemptions_per_customer:number;first_time_only:boolean;auto_apply:boolean;stackable:boolean;is_active:boolean};
-type Subscription={id:string;business_id:string;plan_id:string;status:string;current_period_end:string|null;cancel_at_period_end:boolean;businesses?:{name:string}[]|null;subscription_plans?:{name:string}[]|null};
+type SubscriptionBusiness={name:string};
+type SubscriptionPlan={name:string};
+type Subscription={id:string;business_id:string;plan_id:string;status:string;current_period_end:string|null;cancel_at_period_end:boolean;businesses:SubscriptionBusiness|null;subscription_plans:SubscriptionPlan|null};
 type Billing={id:string;default_trial_days:number;grace_period_days:number;invoice_due_days:number;auto_renew:boolean;proration_mode:string;cancellation_mode:string;failed_payment_action:string;dunning_enabled:boolean;tax_mode:string;billing_anchor:string;default_currency:string;payment_provider:string|null;payment_collection_mode:"manual"|"gateway"|"hybrid";default_payment_method_id:string|null;invoice_prefix:string;invoice_terms:string};
 type CompanyProfile={id:string;legal_name:string;trade_name:string|null;pan:string|null;gstin:string|null;cin:string|null;billing_email:string|null;billing_phone:string|null;website:string|null;address_line1:string|null;address_line2:string|null;city:string|null;state:string|null;postal_code:string|null;country_code:string;invoice_prefix:string;invoice_terms:string;support_email:string|null;support_phone:string|null};
 type PaymentMethod={id:string;code:string;display_name:string;method_type:"bank_transfer"|"upi"|"gateway";provider:string|null;is_active:boolean;is_default:boolean;beneficiary_name:string|null;bank_name:string|null;ifsc_code:string|null;branch_name:string|null;upi_id:string|null;merchant_account_id:string|null;public_key:string|null;checkout_url:string|null;settlement_currency:string;instructions:string|null;account_number_last4:string|null;account_number_vault_id:string|null;gateway_secret_vault_id:string|null;webhook_secret_vault_id:string|null};
@@ -40,23 +42,71 @@ export default function Subscription(){
  const [planModules,setPlanModules]=useState<Record<string,Module>>({});
  const [search,setSearch]=useState("");
 
- const load=useCallback(async(show=true)=>{
-  if(show)setLoading(true);setError("");
-  const s=supabase();
-  const [p,m,o,op,sub,b,cp,pm]=await Promise.all([
-   s.from("subscription_plans").select("id,code,name,monthly_price,annual_price,currency_code,limits,features,is_active,description,billing_model,setup_fee,trial_days,minimum_seats,included_seats,overage_enabled,overage_config,is_featured,public_visible,display_order").order("monthly_price"),
-   s.from("subscription_plan_modules").select("id,plan_id,module_code,module_name,enabled,limit_value,limit_unit,notes"),
-   s.from("subscription_offers").select("*").order("created_at",{ascending:false}),
-   s.from("subscription_offer_plans").select("offer_id,plan_id"),
-   s.from("business_subscriptions").select("id,business_id,plan_id,status,current_period_end,cancel_at_period_end,businesses(name),subscription_plans(name)").order("created_at",{ascending:false}).limit(100),
-   s.from("subscription_billing_settings").select("*").limit(1).maybeSingle(),
-   s.from("billing_company_profile").select("*").limit(1).maybeSingle(),
-   s.from("billing_payment_methods").select("*").order("is_default",{ascending:false}).order("display_name")
+ const load=useCallback(async(showLoading=true)=>{
+  if(showLoading)setLoading(true);
+  setError("");
+
+  const client=supabase();
+  const [
+    plansRes,
+    modulesRes,
+    offersRes,
+    offerPlansRes,
+    subscriptionsRes,
+    billingRes,
+    companyRes,
+    paymentMethodsRes
+  ]=await Promise.all([
+    client.from("subscription_plans").select("id,code,name,monthly_price,annual_price,currency_code,limits,features,is_active,description,billing_model,setup_fee,trial_days,minimum_seats,included_seats,overage_enabled,overage_config,is_featured,public_visible,display_order").order("monthly_price"),
+    client.from("subscription_plan_modules").select("id,plan_id,module_code,module_name,enabled,limit_value,limit_unit,notes"),
+    client.from("subscription_offers").select("*").order("created_at",{ascending:false}),
+    client.from("subscription_offer_plans").select("offer_id,plan_id"),
+    client.from("business_subscriptions").select("id,business_id,plan_id,status,current_period_end,cancel_at_period_end,businesses(name),subscription_plans(name)").order("created_at",{ascending:false}).limit(100),
+    client.from("subscription_billing_settings").select("*").limit(1).maybeSingle(),
+    client.from("billing_company_profile").select("*").limit(1).maybeSingle(),
+    client.from("billing_payment_methods").select("*").order("is_default",{ascending:false}).order("display_name")
   ]);
-  const first=p.error||m.error||o.error||op.error||sub.error||b.error||cp.error||pm.error;
-  if(first)setError(first.message);
-  else{const map:Record<string,string[]>={};(op.data||[]).forEach((x:any)=>{(map[x.offer_id] ||= []).push(x.plan_id)});setPlans(p.data||[]);setModules(m.data||[]);setOffers(o.data||[]);setOfferPlanIds(map);setSubscriptions((sub.data||[]) as Subscription[]);setBilling(b.data||null);setCompany(cp.data||null);setPayments((pm.data||[]) as PaymentMethod[]);}
-  if(show)setLoading(false);notifyAdminRefreshComplete();
+
+  const firstError=
+    plansRes.error||
+    modulesRes.error||
+    offersRes.error||
+    offerPlansRes.error||
+    subscriptionsRes.error||
+    billingRes.error||
+    companyRes.error||
+    paymentMethodsRes.error;
+
+  if(firstError){
+    setError(firstError.message);
+  }else{
+    const offerPlanMap:Record<string,string[]>={};
+    (offerPlansRes.data||[]).forEach((offerPlan)=>{
+      (offerPlanMap[offerPlan.offer_id] ||= []).push(offerPlan.plan_id);
+    });
+
+    const normalizedSubscriptions:Subscription[]=(subscriptionsRes.data||[]).map((subscription)=>({
+      ...subscription,
+      businesses:Array.isArray(subscription.businesses)
+        ? subscription.businesses[0]||null
+        : subscription.businesses||null,
+      subscription_plans:Array.isArray(subscription.subscription_plans)
+        ? subscription.subscription_plans[0]||null
+        : subscription.subscription_plans||null
+    }));
+
+    setPlans(plansRes.data||[]);
+    setModules(modulesRes.data||[]);
+    setOffers(offersRes.data||[]);
+    setOfferPlanIds(offerPlanMap);
+    setSubscriptions(normalizedSubscriptions);
+    setBilling(billingRes.data||null);
+    setCompany(companyRes.data||null);
+    setPayments(paymentMethodsRes.data||[]);
+  }
+
+  if(showLoading)setLoading(false);
+  notifyAdminRefreshComplete();
  },[]);
  useEffect(()=>{const requested=new URLSearchParams(window.location.search).get("tab");if(requested==="payments"||requested==="billing"||requested==="plans"||requested==="offers"||requested==="modules"||requested==="subscriptions"||requested==="overview")setTab(requested)},[]);
  useEffect(()=>{load()},[load]);
