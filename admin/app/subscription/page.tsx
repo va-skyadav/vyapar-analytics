@@ -58,6 +58,7 @@ export default function Subscription(){
   else{const map:Record<string,string[]>={};(op.data||[]).forEach((x:any)=>{(map[x.offer_id] ||= []).push(x.plan_id)});setPlans(p.data||[]);setModules(m.data||[]);setOffers(o.data||[]);setOfferPlanIds(map);setSubscriptions((sub.data||[]) as Subscription[]);setBilling(b.data||null);setCompany(cp.data||null);setPayments((pm.data||[]) as PaymentMethod[]);}
   if(show)setLoading(false);notifyAdminRefreshComplete();
  },[]);
+ useEffect(()=>{const requested=new URLSearchParams(window.location.search).get("tab");if(requested==="payments"||requested==="billing"||requested==="plans"||requested==="offers"||requested==="modules"||requested==="subscriptions"||requested==="overview")setTab(requested)},[]);
  useEffect(()=>{load()},[load]);
  useAdminRefresh(useCallback(()=>load(false),[load]));
 
