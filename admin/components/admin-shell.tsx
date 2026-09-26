@@ -4,7 +4,7 @@ import {LogOut,RefreshCw} from "lucide-react";
 import {supabase} from "../lib/supabase";
 import {ADMIN_REFRESH_COMPLETE_EVENT,ADMIN_REFRESH_EVENT} from "../lib/admin-refresh";
 
-const links=[["/","Business Overview","dashboard.view"],["/subscription","Subscription & Billing","platform.manage"],["/customers","Customers","customers.view"],["/finance","Finance & Growth","finance.view"],["/organization","Organization","roles.manage"],["/settings","Settings & Platform","platform.manage"]];
+const links=[["/","Business Overview","dashboard.view"],["/subscription","Subscription & Billing","subscriptions.view"],["/customers","Customers","customers.view"],["/finance","Finance & Growth","finance.view"],["/organization","Organization","roles.manage"],["/settings","Settings & Platform","platform.manage"]];
 
 export default function AdminShell({active,children}:{active:string;children:React.ReactNode}){
   const [checking,setChecking]=useState(true);
