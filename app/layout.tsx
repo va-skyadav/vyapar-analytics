@@ -1,5 +1,4 @@
 import "./globals.css";
-import BrandDisplay from "@/components/brand-display";
 
 export const metadata = {
   title: "Vyapar Analytics",
@@ -9,7 +8,7 @@ export const metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body>{children}<BrandDisplay /></body>
+      <body>{children}</body>
     </html>
   );
 }
