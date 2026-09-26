@@ -1,4 +1,3 @@
-/* deployment retry 5 */
 "use client";
 
 import {useCallback,useEffect,useMemo,useState} from "react";
@@ -42,7 +41,7 @@ export default function Settings(){
    s.from("platform_feature_flags").select("id,code,name,description,enabled").order("name"),
    s.from("platform_integrations").select("id,code,name,category,status,description,last_checked_at").order("category,name"),
    s.from("admin_permissions").select("id,code,name,module,action").order("module,code"),
-   s.from("subscription_plans").select("id,code,name,monthly_price,annual_price,currency_code,is_active,description").order("monthly_price"),
+   s.from("subscription_plans").select("id,code,name,monthly_price,annual_price,currency_code,limits,features,is_active,description").order("monthly_price"),
    s.from("admin_audit_logs").select("id,action,entity_type,entity_id,created_at").order("created_at",{ascending:false}).limit(30)
   ]);
   const first=a.error||f.error||i.error||p.error||pl.error||l.error;
