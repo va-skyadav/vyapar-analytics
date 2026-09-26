@@ -32,6 +32,7 @@ export default function Subscription(){
  const [offerForm,setOfferForm]=useState<any>(blankOffer);
  const [editingOffer,setEditingOffer]=useState<Offer|null>(null);
  const [offerEditorOpen,setOfferEditorOpen]=useState(false);
+ const [offerPlanIds,setOfferPlanIds]=useState<Record<string,string[]>>({});
  const [selectedPlanId,setSelectedPlanId]=useState("");
  const [planModules,setPlanModules]=useState<Record<string,Module>>({});
  const [search,setSearch]=useState("");
