@@ -32,14 +32,14 @@ export default function Settings(){
  const load=useCallback(async(showLoading=true)=>{
   if(showLoading)setLoading(true); setError("");
   const s=supabase();
-  const [a,f,i,p,pl,l]=await Promise.all([
+  const [a,f,i,p,l]=await Promise.all([
    s.from("platform_settings").select("id,key,value,updated_at").order("key"),
    s.from("platform_feature_flags").select("id,code,name,description,enabled").order("name"),
    s.from("platform_integrations").select("id,code,name,category,status,description,last_checked_at").order("category,name"),
    s.from("admin_permissions").select("id,code,name,module,action").order("module,code"),
    s.from("admin_audit_logs").select("id,action,entity_type,entity_id,created_at").order("created_at",{ascending:false}).limit(30)
   ]);
-  const first=a.error||f.error||i.error||p.error||pl.error||l.error;
+  const first=a.error||f.error||i.error||p.error||l.error;
   if(first)setError(first.message||"Unable to load platform controls");
   else{
    setSettings(a.data||[]);setFlags(f.data||[]);setIntegrations(i.data||[]);
@@ -92,18 +92,6 @@ export default function Settings(){
  };
 
  const updateSettingValue=(id:string,value:any)=>setSettings(x=>x.map(v=>v.id===id?{...v,value}:v));
-
- const openPlan=(p:Plan)=>{setEditingPlan(p);setPlanForm({name:p.name,monthly_price:String(p.monthly_price??0),annual_price:String(p.annual_price??0),currency_code:(p.currency_code||"INR").trim(),is_active:p.is_active,description:p.description||"",limits:JSON.stringify(p.limits||{},null,2),features:JSON.stringify(p.features||{},null,2)});};
- const savePlan=async()=>{
-  if(!editingPlan)return;
-  const monthly=Number(planForm.monthly_price),annual=Number(planForm.annual_price);
-  if(!Number.isFinite(monthly)||monthly<0||!Number.isFinite(annual)||annual<0){setError("Plan prices must be valid non-negative numbers.");return;}
-  let limits:any,features:any; try{limits=JSON.parse(planForm.limits||"{}");features=JSON.parse(planForm.features||"{}");}catch{setError("Plan limits and feature entitlements must be valid JSON.");return;}
-  setSaving(editingPlan.id);setError("");
-  const {error:e}=await supabase().from("subscription_plans").update({name:planForm.name.trim(),monthly_price:monthly,annual_price:annual,currency_code:planForm.currency_code.trim().toUpperCase().slice(0,3),is_active:planForm.is_active,description:planForm.description.trim(),limits,features}).eq("id",editingPlan.id);
-  if(e)setError(e.message);else{await adminAudit("SUBSCRIPTION_PLAN_UPDATED","subscription_plans",editingPlan.id,editingPlan,{...editingPlan,...planForm,monthly_price:monthly,annual_price:annual});setEditingPlan(null);await load(false);}
-  setSaving(null);
- };
 
  return <AdminShell active="/settings">
   {error&&<div className="notice errorNotice">{error}</div>}
