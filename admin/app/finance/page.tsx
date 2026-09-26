@@ -23,17 +23,19 @@ export default function Finance(){
  const load=useCallback(async(showLoading=true)=>{
   if(showLoading)setLoading(true);
   setError("");
-  const s=supabase();
-  const [g,m,p]=await Promise.all([
-   s.rpc("get_admin_customer_growth"),
-   s.rpc("get_admin_marketing_monthly"),
-   s.from("subscription_plans").select("id,code,name,monthly_price,annual_price,currency_code,is_active").order("monthly_price")
+  const client=supabase();
+  const [growthRes,marketingRes,plansRes]=await Promise.all([
+   client.rpc("get_admin_customer_growth"),
+   client.rpc("get_admin_marketing_monthly"),
+   client.from("subscription_plans").select("id,code,name,monthly_price,annual_price,currency_code,is_active").order("monthly_price")
   ]);
-  if(g.error||m.error||p.error)setError(g.error?.message||m.error?.message||p.error?.message||"Unable to load finance data");
-  else{
-   setGrowth(g.data||[]);
-   setMarketing(m.data||[]);
-   setPlans(p.data||[]);
+  const firstError=growthRes.error||marketingRes.error||plansRes.error;
+  if(firstError){
+   setError(firstError.message||"Unable to load finance data");
+  }else{
+   setGrowth(growthRes.data||[]);
+   setMarketing(marketingRes.data||[]);
+   setPlans(plansRes.data||[]);
   }
   if(showLoading)setLoading(false);
   notifyAdminRefreshComplete();
