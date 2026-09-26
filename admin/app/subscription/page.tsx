@@ -1,4 +1,5 @@
 "use client";
+// CI validation marker for Admin subscription build.
 
 import {useCallback,useEffect,useMemo,useState} from "react";
 import AdminShell from "../../components/admin-shell";
