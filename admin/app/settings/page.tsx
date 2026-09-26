@@ -35,19 +35,23 @@ export default function Settings(){
 
  const load=useCallback(async(showLoading=true)=>{
   if(showLoading)setLoading(true); setError("");
-  const s=supabase();
-  const [a,f,i,p,l]=await Promise.all([
-   s.from("platform_settings").select("id,key,value,updated_at").order("key"),
-   s.from("platform_feature_flags").select("id,code,name,description,enabled").order("name"),
-   s.from("platform_integrations").select("id,code,name,category,status,description,last_checked_at").order("category,name"),
-   s.from("admin_permissions").select("id,code,name,module,action").order("module,code"),
-   s.from("admin_audit_logs").select("id,action,entity_type,entity_id,created_at").order("created_at",{ascending:false}).limit(30)
+  const client=supabase();
+  const [settingsRes,flagsRes,integrationsRes,permissionsRes,auditLogsRes]=await Promise.all([
+   client.from("platform_settings").select("id,key,value,updated_at").order("key"),
+   client.from("platform_feature_flags").select("id,code,name,description,enabled").order("name"),
+   client.from("platform_integrations").select("id,code,name,category,status,description,last_checked_at").order("category,name"),
+   client.from("admin_permissions").select("id,code,name,module,action").order("module,code"),
+   client.from("admin_audit_logs").select("id,action,entity_type,entity_id,created_at").order("created_at",{ascending:false}).limit(30)
   ]);
-  const first=a.error||f.error||i.error||p.error||l.error;
-  if(first)setError(first.message||"Unable to load platform controls");
-  else{
-   setSettings(a.data||[]);setFlags(f.data||[]);setIntegrations(i.data||[]);
-   setPerms(p.data||[]);setAudits(l.data||[]);
+  const firstError=settingsRes.error||flagsRes.error||integrationsRes.error||permissionsRes.error||auditLogsRes.error;
+  if(firstError){
+   setError(firstError.message||"Unable to load platform controls");
+  }else{
+   setSettings(settingsRes.data||[]);
+   setFlags(flagsRes.data||[]);
+   setIntegrations(integrationsRes.data||[]);
+   setPerms(permissionsRes.data||[]);
+   setAudits(auditLogsRes.data||[]);
   }
   if(showLoading)setLoading(false); notifyAdminRefreshComplete();
  },[]);
