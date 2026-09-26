@@ -3,7 +3,7 @@ import {useEffect,useState} from "react";
 import {LogOut,RefreshCw} from "lucide-react";
 import {supabase} from "../lib/supabase";
 import {ADMIN_REFRESH_COMPLETE_EVENT,ADMIN_REFRESH_EVENT} from "../lib/admin-refresh";
-import BrandDisplay from "../../components/brand-display";
+import BrandDisplay from "./brand-display";
 
 const links=[["/","Business Overview","dashboard.view"],["/subscription","Subscription & Billing","subscriptions.view"],["/subscription?tab=payments","Company & Payments","subscriptions.view"],["/customers","Customers","customers.view"],["/finance","Finance & Growth","finance.view"],["/organization","Organization","roles.manage"],["/settings","Settings & Platform","platform.manage"]];
 
