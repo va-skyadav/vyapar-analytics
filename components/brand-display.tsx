@@ -28,5 +28,5 @@ export default function BrandDisplay({admin=false}:BrandProps){
   window.addEventListener("brand-settings-updated",handler);
   return()=>window.removeEventListener("brand-settings-updated",handler);
  },[admin]);
- return <div className="brand brandManaged" style={{maxWidth:"100%",minWidth:0,overflow:"visible"}}>{brand.logo?<img src={brand.logo} alt={brand.name} style={{display:"block",width:"auto",height:"auto",maxWidth:"218px",maxHeight:"70px",objectFit:"contain",objectPosition:"left center"}}/>:<strong>{brand.name}</strong>}<span>{brand.subtitle}</span></div>;
+ return <div className="brand brandManaged" style={{maxWidth:"100%",minWidth:0,overflow:"visible"}}>{brand.logo?<img src={brand.logo} alt={brand.name} style={{display:"block",width:"auto",height:"auto",maxWidth:"218px",maxHeight:"70px",objectFit:"contain",objectPosition:"left center",filter:"contrast(1.12) saturate(1.05)"}}/>:<strong>{brand.name}</strong>}<span>{brand.subtitle}</span></div>;
 }
