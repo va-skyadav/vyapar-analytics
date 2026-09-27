@@ -14,7 +14,7 @@ button, input, select { font: inherit; }
 a { color: inherit; }
 .dashboard { min-height: 100vh; display: flex; }
 .sidebar { width: 250px; background: #111827; color: white; padding: 24px 16px; display: flex; flex-direction: column; }
-.brand { padding: 0 12px 28px; font-size: 21px; font-weight: 750; letter-spacing: -.02em; }
+.brand { padding: 0 0 28px; font-size: 21px; font-weight: 750; letter-spacing: -.02em; }
 .brand span { display: block; color: #9ca3af; font-size: 11px; font-weight: 500; margin-top: 4px; letter-spacing: .02em; }
 .nav { display: grid; gap: 6px; }
 .navItem { display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 9px; color: #cbd5e1; text-decoration: none; font-size: 14px; }
