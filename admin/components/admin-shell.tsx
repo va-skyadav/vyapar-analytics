@@ -5,7 +5,7 @@ import {supabase} from "../lib/supabase";
 import {ADMIN_REFRESH_COMPLETE_EVENT,ADMIN_REFRESH_EVENT} from "../lib/admin-refresh";
 import BrandDisplay from "./brand-display";
 
-const links=[["/","Business Overview","dashboard.view"],["/subscription","Subscription & Billing","subscriptions.view"],["/subscription?tab=payments","Company & Payments","subscriptions.view"],["/customers","Customers","customers.view"],["/finance","Finance & Growth","finance.view"],["/organization","Organization","roles.manage"],["/settings","Settings & Platform","platform.manage"]];
+const links:Array<[string,string,string]>=[["/","Business Overview","dashboard.view"],["/subscription","Subscription & Billing","subscriptions.view"],["/subscription?tab=payments","Company & Payments","subscriptions.view"],["/customers","Customers","customers.view"],["/finance","Finance & Growth","platform.manage"],["/organization","Organization","roles.manage"],["/settings","Settings & Platform","platform.manage"]];
 
 export default function AdminShell({active,children}:{active:string;children:React.ReactNode}){
   const [checking,setChecking]=useState(true);
