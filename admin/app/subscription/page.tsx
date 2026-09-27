@@ -85,7 +85,7 @@ export default function Subscription(){
       (offerPlanMap[offerPlan.offer_id] ||= []).push(offerPlan.plan_id);
     });
 
-    const normalizedSubscriptions:Subscription[]=(subscriptionsRes.data||[]).map((subscription)=>({
+    const normalizedSubscriptions:Subscription[]=(subscriptionsRes.data||[]).map((subscription:any)=>({
       ...subscription,
       businesses:Array.isArray(subscription.businesses)
         ? subscription.businesses[0]||null
@@ -95,14 +95,14 @@ export default function Subscription(){
         : subscription.subscription_plans||null
     }));
 
-    setPlans(plansRes.data||[]);
-    setModules(modulesRes.data||[]);
-    setOffers(offersRes.data||[]);
+    setPlans((plansRes.data||[]) as Plan[]);
+    setModules((modulesRes.data||[]) as Module[]);
+    setOffers((offersRes.data||[]) as Offer[]);
     setOfferPlanIds(offerPlanMap);
     setSubscriptions(normalizedSubscriptions);
-    setBilling(billingRes.data||null);
-    setCompany(companyRes.data||null);
-    setPayments(paymentMethodsRes.data||[]);
+    setBilling((billingRes.data||null) as Billing|null);
+    setCompany((companyRes.data||null) as CompanyProfile|null);
+    setPayments((paymentMethodsRes.data||[]) as PaymentMethod[]);
   }
 
   if(showLoading)setLoading(false);
