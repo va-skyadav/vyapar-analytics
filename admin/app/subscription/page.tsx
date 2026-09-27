@@ -8,9 +8,7 @@ import {notifyAdminRefreshComplete,useAdminRefresh} from "../../lib/admin-refres
 type Plan={id:string;code:string;name:string;monthly_price:number;annual_price:number;currency_code:string;limits:any;features:any;is_active:boolean;description?:string|null;billing_model:string;setup_fee:number;trial_days:number;minimum_seats:number;included_seats:number;overage_enabled:boolean;overage_config:any;is_featured:boolean;public_visible:boolean;display_order:number};
 type Module={id?:string;plan_id:string;module_code:string;module_name:string;enabled:boolean;limit_value:number|null;limit_unit:string|null;notes:string|null};
 type Offer={id:string;code:string;name:string;description:string|null;offer_type:string;discount_type:string;discount_value:number;buy_quantity:number|null;free_quantity:number|null;trial_days:number|null;credit_amount:number|null;starts_at:string|null;ends_at:string|null;max_redemptions:number|null;max_redemptions_per_customer:number;first_time_only:boolean;auto_apply:boolean;stackable:boolean;is_active:boolean};
-type SubscriptionBusiness={name:string};
-type SubscriptionPlan={name:string};
-type Subscription={id:string;business_id:string;plan_id:string;status:string;current_period_end:string|null;cancel_at_period_end:boolean;businesses:SubscriptionBusiness|null;subscription_plans:SubscriptionPlan|null};
+type Subscription={id:string;business_id:string;plan_id:string;status:string;current_period_end:string|null;cancel_at_period_end:boolean;businesses?:{name:string}[]|null;subscription_plans?:{name:string}[]|null};
 type Billing={id:string;default_trial_days:number;grace_period_days:number;invoice_due_days:number;auto_renew:boolean;proration_mode:string;cancellation_mode:string;failed_payment_action:string;dunning_enabled:boolean;tax_mode:string;billing_anchor:string;default_currency:string;payment_provider:string|null;payment_collection_mode:"manual"|"gateway"|"hybrid";default_payment_method_id:string|null;invoice_prefix:string;invoice_terms:string};
 type CompanyProfile={id:string;legal_name:string;trade_name:string|null;pan:string|null;gstin:string|null;cin:string|null;billing_email:string|null;billing_phone:string|null;website:string|null;address_line1:string|null;address_line2:string|null;city:string|null;state:string|null;postal_code:string|null;country_code:string;invoice_prefix:string;invoice_terms:string;support_email:string|null;support_phone:string|null};
 type PaymentMethod={id:string;code:string;display_name:string;method_type:"bank_transfer"|"upi"|"gateway";provider:string|null;is_active:boolean;is_default:boolean;beneficiary_name:string|null;bank_name:string|null;ifsc_code:string|null;branch_name:string|null;upi_id:string|null;merchant_account_id:string|null;public_key:string|null;checkout_url:string|null;settlement_currency:string;instructions:string|null;account_number_last4:string|null;account_number_vault_id:string|null;gateway_secret_vault_id:string|null;webhook_secret_vault_id:string|null};
@@ -85,15 +83,7 @@ export default function Subscription(){
       (offerPlanMap[offerPlan.offer_id] ||= []).push(offerPlan.plan_id);
     });
 
-    const normalizedSubscriptions:Subscription[]=(subscriptionsRes.data||[]).map((subscription:any)=>({
-      ...subscription,
-      businesses:Array.isArray(subscription.businesses)
-        ? subscription.businesses[0]||null
-        : subscription.businesses||null,
-      subscription_plans:Array.isArray(subscription.subscription_plans)
-        ? subscription.subscription_plans[0]||null
-        : subscription.subscription_plans||null
-    }));
+    const normalizedSubscriptions=(subscriptionsRes.data||[]) as Subscription[];
 
     setPlans((plansRes.data||[]) as Plan[]);
     setModules((modulesRes.data||[]) as Module[]);
