@@ -1,0 +1,3 @@
+-- Sprint 1: move every Admin browser mutation behind SECURITY DEFINER RPCs; billing/payment tables become SELECT-only to browser clients.
+-- Production applied. Functions: billing company/payment, billing settings, subscription plans/modules, offers/plan links, subscriptions, platform settings/flags/integrations.
+-- Also revokes browser EXECUTE for password-change audit RPC.
