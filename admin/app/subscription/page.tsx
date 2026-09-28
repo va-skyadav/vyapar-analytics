@@ -102,11 +102,6 @@ export default function Subscription(){
  useEffect(()=>{load()},[load]);
  useAdminRefresh(useCallback(()=>load(false),[load]));
 
- const audit=async(action:string,entity:string,id:string|null,oldData:any=null,newData:any=null)=>{
-  const s=supabase();const {data:u}=await s.auth.getUser();if(!u.user)return;
-  const {data:a}=await s.from("admin_users").select("id").eq("user_id",u.user.id).maybeSingle();
-  if(a?.id)await s.from("admin_audit_logs").insert({admin_user_id:a.id,action,entity_type:entity,entity_id:id,old_data:oldData,new_data:newData});
- };
 
  const openPlan=(p:Plan)=>{
   setEditingPlan(p);setSelectedPlanId(p.id);
@@ -135,8 +130,7 @@ export default function Subscription(){
    const rows=MODULES.map(([code,name])=>({plan_id:planId,module_code:code,module_name:name,enabled:Boolean(planModules[code]?.enabled),limit_value:planModules[code]?.limit_value??null,limit_unit:planModules[code]?.limit_unit||null,notes:planModules[code]?.notes||null}));
    await s.from("subscription_plan_modules").insert(rows);
   }
-  await audit(editingPlan?"SUBSCRIPTION_PLAN_UPDATED":"SUBSCRIPTION_PLAN_CREATED","subscription_plans",planId||null,editingPlan,planForm);
-  setSaving("");setEditingPlan(null);await load(false);
+    setSaving("");setEditingPlan(null);await load(false);
  };
 
  const editOffer=(o:Offer)=>{setOfferEditorOpen(true);setEditingOffer(o);setOfferForm({code:o.code,name:o.name,description:o.description||"",applicablePlans:offerPlanIds[o.id]||[],offer_type:o.offer_type,discount_type:o.discount_type,discount_value:String(o.discount_value??0),buy_quantity:String(o.buy_quantity??2),free_quantity:String(o.free_quantity??1),trial_days:String(o.trial_days??14),credit_amount:String(o.credit_amount??0),starts_at:o.starts_at?o.starts_at.slice(0,16):"",ends_at:o.ends_at?o.ends_at.slice(0,16):"",max_redemptions:o.max_redemptions?String(o.max_redemptions):"",max_redemptions_per_customer:String(o.max_redemptions_per_customer??1),first_time_only:o.first_time_only,auto_apply:o.auto_apply,stackable:o.stackable,is_active:o.is_active});};
@@ -150,8 +144,7 @@ export default function Subscription(){
   if(e){setError(e.message);setSaving("");return}
   const offerId=data?.id;
   if(offerId){await supabase().from("subscription_offer_plans").delete().eq("offer_id",offerId);if((offerForm.applicablePlans||[]).length)await supabase().from("subscription_offer_plans").insert((offerForm.applicablePlans||[]).map((plan_id:string)=>({offer_id:offerId,plan_id})));}
-  await audit(editingOffer?"SUBSCRIPTION_OFFER_UPDATED":"SUBSCRIPTION_OFFER_CREATED","subscription_offers",offerId||null,editingOffer,payload);
-  setSaving("");setEditingOffer(null);setOfferEditorOpen(false);await load(false);
+    setSaving("");setEditingOffer(null);setOfferEditorOpen(false);await load(false);
  };
 
  const saveCompany=async()=>{if(!company)return;setSaving("company");setError("");const {id,...payload}=company;const {error:e}=await supabase().from("billing_company_profile").update({...payload,updated_at:new Date().toISOString()}).eq("id",id);if(e)setError(e.message);else await audit("BILLING_COMPANY_PROFILE_UPDATED","billing_company_profile",id,null,payload);setSaving("");await load(false);};
@@ -161,16 +154,14 @@ export default function Subscription(){
  const saveBilling=async()=>{
   if(!billing)return;setSaving("billing");setError("");
   const {error:e}=await supabase().from("subscription_billing_settings").update({...billing,updated_at:new Date().toISOString()}).eq("id",billing.id);
-  if(e)setError(e.message);else await audit("SUBSCRIPTION_BILLING_SETTINGS_UPDATED","subscription_billing_settings",billing.id,null,billing);
-  setSaving("");await load(false);
+  if(e)setError(e.message);else   setSaving("");await load(false);
  };
 
  const updateSubscription=async(id:string,patch:any)=>{
   setSaving("sub:"+id);setError("");
   const old=subscriptions.find(x=>x.id===id);
   const {error:e}=await supabase().from("business_subscriptions").update({...patch,updated_at:new Date().toISOString()}).eq("id",id);
-  if(e)setError(e.message);else await audit("BUSINESS_SUBSCRIPTION_UPDATED","business_subscriptions",id,old,patch);
-  setSaving("");await load(false);
+  if(e)setError(e.message);else   setSaving("");await load(false);
  };
 
  const activePlans=plans.filter(p=>p.is_active).length;
