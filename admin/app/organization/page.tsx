@@ -46,11 +46,12 @@ export default function Organization(){
   if(showLoading)setLoading(true);
   setError("");
   const client=supabase();
-  const [adminsRes,rolesRes,departmentsRes,rightsRes]=await Promise.all([
+  const [adminsRes,rolesRes,departmentsRes,rightsRes,accessRes]=await Promise.all([
    client.rpc("get_admin_users_directory"),
    client.from("admin_roles").select("id,code,name,description,is_active").order("name"),
    client.from("admin_departments").select("id,name,is_active").order("name"),
-   client.rpc("get_admin_role_rights")
+   client.rpc("get_admin_role_rights"),
+   client.rpc("get_my_admin_access")
   ]);
   const firstError=adminsRes.error||rolesRes.error||departmentsRes.error||rightsRes.error;
   if(accessRes.data?.length) setCurrentRoleCode(accessRes.data[0].role_code||"");
