@@ -39,7 +39,7 @@ export default function Organization(){
  const [savingRole,setSavingRole]=useState(false);
  const [passwordAdmin,setPasswordAdmin]=useState<Admin|null>(null);
  const [newPassword,setNewPassword]=useState("");
- const [savingPassword,setSavingPassword]=useState(false);
+ const [savingPassword,setSavingPassword]=useState(false);\n const [currentRoleCode,setCurrentRoleCode]=useState("");
 
  const load=useCallback(async(showLoading=true)=>{
   if(showLoading)setLoading(true);
@@ -51,7 +51,7 @@ export default function Organization(){
    client.from("admin_departments").select("id,name,is_active").order("name"),
    client.rpc("get_admin_role_rights")
   ]);
-  const firstError=adminsRes.error||rolesRes.error||departmentsRes.error||rightsRes.error;
+  const firstError=adminsRes.error||rolesRes.error||departmentsRes.error||rightsRes.error;\n  if(accessRes.data?.length) setCurrentRoleCode(accessRes.data[0].role_code||"");
   if(firstError){
    setError(firstError.message||"Unable to load organization data");
   }else{
@@ -106,25 +106,8 @@ export default function Organization(){
   setSaving(false);
  };
 
- const toggle=async(admin:Admin)=>{
-  if(admin.role?.code==="SUPER_ADMIN"&&admin.status==="active"){setError("VA Super Admin is a protected account and cannot be suspended.");return;}
-  setBusyId(admin.id);setError("");
-  const next=admin.status==="active"?"suspended":"active";
-  const s=supabase();
-  const {data:user}=await s.auth.getUser();
-  const {data:currentAdmin}=await s.from("admin_users").select("id").eq("user_id",user.user?.id||"").maybeSingle();
-  if(!currentAdmin){setError("Current administrator could not be resolved.");setBusyId("");return;}
-  const {error}=await s.from("admin_users").update({status:next}).eq("id",admin.id);
-  if(error)setError(error.message);
-  else{
-   await s.from("admin_audit_logs").insert({admin_user_id:currentAdmin.id,action:next==="active"?"ADMIN_ACTIVATED":"ADMIN_SUSPENDED",entity_type:"admin_user",entity_id:admin.id,old_data:{status:admin.status},new_data:{status:next}});
-   setAdmins(items=>items.map(item=>item.id===admin.id?{...item,status:next}:item));notifyAdminRefreshComplete();
-  }
-  setBusyId("");
- };
-
- const changePassword=async()=>{
-  if(!passwordAdmin||newPassword.length<8){setError("Password must be at least 8 characters.");return;}
+ const toggle=async(admin:Admin)=>{\n  if(admin.role?.code==="SUPER_ADMIN"){setError("SUPER_ADMIN is protected and cannot be suspended or activated.");return;}\n  const next=admin.status==="active"?"suspended":"active";\n  const reason=window.prompt("Reason (required):");\n  if(reason===null)return;\n  if(!reason.trim()){setError("A reason is required.");return;}\n  if(!window.confirm(next==="suspended"?"Suspend this administrator?":"Activate this administrator?"))return;\n  setBusyId(admin.id);setError("");\n  const {error}=await supabase().rpc("admin_set_admin_status",{p_admin_id:admin.id,p_status:next,p_reason:reason.trim()});\n  if(error)setError(error.message);else{setAdmins(items=>items.map(item=>item.id===admin.id?{...item,status:next}:item));notifyAdminRefreshComplete();}\n  setBusyId("");\n };\n\n const changePassword=async()=>{
+  if(!passwordAdmin||newPassword.length<12){setError("Password must be at least 12 characters.");return;}
   setSavingPassword(true);setError("");
   const {data,error}=await supabase().functions.invoke("admin-change-password",{body:{target_user_id:passwordAdmin.user_id,password:newPassword}});
   if(error||data?.error)setError(data?.error||error?.message||"Unable to change password.");
@@ -137,7 +120,7 @@ export default function Organization(){
   {passwordAdmin&&<section className="card financePanel addAdminPanel roleEditorPanel">
    <div className="panelHeader"><div><div className="panelTitle">Change Administrator Password</div><div className="muted panelSubtitle">Direct password administration is available only to VA Super Admin and does not use the password-reset email workflow.</div></div><button className="secondaryButton" onClick={()=>{setPasswordAdmin(null);setNewPassword("")}}>Close</button></div>
    <div className="roleEditorHeader"><strong>{passwordAdmin.display_name}</strong><span className="muted">{passwordAdmin.email}</span></div>
-   <label>New password<input className="input" type="password" value={newPassword} onChange={e=>setNewPassword(e.target.value)} placeholder="Minimum 8 characters"/></label>
+   <label>New password<input className="input" type="password" value={newPassword} onChange={e=>setNewPassword(e.target.value)} placeholder="Minimum 12 characters"/></label>
    <div className="addAdminActions"><button className="secondaryButton" onClick={()=>{setPasswordAdmin(null);setNewPassword("")}}>Cancel</button><button className="primaryButton" disabled={savingPassword} onClick={changePassword}>{savingPassword?"Changing...":"Change Password"}</button></div>
   </section>}
   {editingRole&&<section className="card financePanel addAdminPanel roleEditorPanel">
@@ -160,7 +143,7 @@ export default function Organization(){
     <div className="addAdminGrid">
      <label>Full name<input className="input" value={form.display_name} onChange={e=>setForm({...form,display_name:e.target.value})} placeholder="e.g. Rahul Sharma"/></label>
      <label>Email<input className="input" type="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})} placeholder="name@company.com"/></label>
-     <label>Access role<select className="input" value={form.role_id} onChange={e=>setForm({...form,role_id:e.target.value})}><option value="">Select role</option>{roles.filter(r=>r.is_active).map(r=><option key={r.id} value={r.id}>{r.name}</option>)}</select></label>
+     <label>Access role<select className="input" value={form.role_id} onChange={e=>setForm({...form,role_id:e.target.value})}><option value="">Select role</option>{roles.filter(r=>r.is_active&&(currentRoleCode==="SUPER_ADMIN"||r.code!=="SUPER_ADMIN")).map(r=><option key={r.id} value={r.id}>{r.name}</option>)}</select></label>
      <label>Department<select className="input" value={form.department_id} onChange={e=>setForm({...form,department_id:e.target.value})}><option value="">Select department</option>{depts.filter(d=>d.is_active).map(d=><option key={d.id} value={d.id}>{d.name}</option>)}</select></label>
     </div>
     {selectedRoleInfo&&<div className="roleInfoBox"><div><strong>{selectedRoleInfo.name}</strong><span>{responsibility[selectedRoleInfo.code]||selectedRoleInfo.description||"Administrative access profile."}</span></div><div className="roleRightsList">{selectedRoleRights.length?selectedRoleRights.map((r,i)=><span key={i}>{r.permission_name||r.permission_code}</span>):<span>No explicit permissions configured.</span>}</div></div>}
@@ -182,7 +165,7 @@ export default function Organization(){
       <td>{admin.email}</td><td>{admin.role?.name||"Unassigned"}</td><td>{admin.department?.name||"Unassigned"}</td>
       <td><span className={admin.status==="active"?"badge good":"badge"}>{admin.status.toUpperCase()}</span></td>
       <td>{admin.role?.code==="SUPER_ADMIN"?<span className="protectedLabel">Protected</span>:<button className="linkButton" disabled={busyId===admin.id} onClick={()=>toggle(admin)}>{busyId===admin.id?"Saving...":admin.status==="active"?"Suspend":"Activate"}</button>}</td>
-      <td><button className="linkButton" onClick={()=>{setPasswordAdmin(admin);setNewPassword("");setError("")}}>Change Password</button></td>
+      <td>{currentRoleCode==="SUPER_ADMIN"&&admin.role?.code!=="SUPER_ADMIN"?<button className="linkButton" onClick={()=>{setPasswordAdmin(admin);setNewPassword("");setError("")}}>Change Password</button>:<span className="protectedLabel">Restricted</span>}</td>
      </tr>)}
     </tbody></table>{!filteredAdmins.length&&<div className="empty">{admins.length?"No administrators match the search.":"No admin users configured."}</div>}</div>
    </section>
@@ -190,7 +173,7 @@ export default function Organization(){
    <section className="card financePanel roleReferencePanel">
     <div className="panelHeader"><div><div className="panelTitle">Administrative Role Reference</div><div className="muted panelSubtitle">Quick guide to the responsibility and effective rights associated with each access role.</div></div><span className="panelMeta">{activeRoles} active roles</span></div>
     <div className="tableWrap"><table><thead><tr><th>Role</th><th>Responsibilities</th><th>Configured Rights</th><th>Control</th></tr></thead><tbody>
-     {roles.filter(r=>r.is_active).map(role=><tr key={role.id}><td><strong>{role.name}</strong><div className="muted planCode">{role.code}</div></td><td>{responsibility[role.code]||role.description||"Administrative responsibilities defined by assigned permissions."}</td><td>{rights.filter(x=>x.role_id===role.id).map(x=>x.permission_name||x.permission_code).filter(Boolean).join(" • ")||"No explicit permissions configured"}</td><td><button className="linkButton" onClick={()=>openRoleEditor(role)}>Edit Rights</button></td></tr>)}
+     {roles.filter(r=>r.is_active).map(role=><tr key={role.id}><td><strong>{role.name}</strong><div className="muted planCode">{role.code}</div></td><td>{responsibility[role.code]||role.description||"Administrative responsibilities defined by assigned permissions."}</td><td>{rights.filter(x=>x.role_id===role.id).map(x=>x.permission_name||x.permission_code).filter(Boolean).join(" • ")||"No explicit permissions configured"}</td><td>{currentRoleCode==="SUPER_ADMIN"&&role.code!=="SUPER_ADMIN"?<button className="linkButton" onClick={()=>openRoleEditor(role)}>Edit Rights</button>:<span className="protectedLabel">Protected</span>}</td></tr>)}
     </tbody></table></div>
    </section>
 
