@@ -11,7 +11,9 @@ type EditState={discount_type:"percentage"|"fixed";discount_value:string;reason:
 
 export default function Customers(){
  const [rows,setRows]=useState<Customer[]>([]),[issues,setIssues]=useState<Issue[]>([]),[overrides,setOverrides]=useState<Record<string,Override>>({}),[editing,setEditing]=useState<string|null>(null),[edit,setEdit]=useState<EditState>({discount_type:"percentage",discount_value:"",reason:"",valid_until:""}),[q,setQ]=useState(""),[filter,setFilter]=useState("ALL"),[loading,setLoading]=useState(true),[error,setError]=useState(""),[permissions,setPermissions]=useState<string[]>([]);
- const load=async(showLoading=true)=>{\n  const access=await supabase().rpc("get_my_admin_access");\n  if(access.data) setPermissions(Array.from(new Set((access.data||[]).map((x:any)=>x.permission_code).filter(Boolean))));
+ const load=async(showLoading=true)=>{
+  const access=await supabase().rpc("get_my_admin_access");
+  if(access.data) setPermissions(Array.from(new Set((access.data||[]).map((x:any)=>x.permission_code).filter(Boolean))));
   if(showLoading)setLoading(true);
   setError("");
   const client=supabase();
