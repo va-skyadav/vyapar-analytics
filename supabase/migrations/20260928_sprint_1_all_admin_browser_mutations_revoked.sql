@@ -1,0 +1,20 @@
+-- Sprint 1: final browser-mutation boundary.
+begin;
+drop policy if exists "Admins can update business subscriptions" on public.business_subscriptions;
+drop policy if exists business_subscriptions_delete on public.business_subscriptions;
+drop policy if exists business_subscriptions_insert on public.business_subscriptions;
+drop policy if exists business_subscriptions_update on public.business_subscriptions;
+drop policy if exists admin_feature_flags_modify on public.platform_feature_flags;
+drop policy if exists admin_integrations_modify on public.platform_integrations;
+drop policy if exists platform_settings_insert on public.platform_settings;
+drop policy if exists platform_settings_update on public.platform_settings;
+drop policy if exists platform_settings_delete on public.platform_settings;
+drop policy if exists "admin manage subscription billing settings" on public.subscription_billing_settings;
+drop policy if exists "admin manage subscription offer plans" on public.subscription_offer_plans;
+drop policy if exists "admin manage subscription offers" on public.subscription_offers;
+drop policy if exists "admin manage subscription plan modules" on public.subscription_plan_modules;
+drop policy if exists "Admins can delete subscription plans" on public.subscription_plans;
+drop policy if exists "Admins can insert subscription plans" on public.subscription_plans;
+drop policy if exists "Admins can update subscription plans" on public.subscription_plans;
+revoke insert,update,delete,truncate,references,trigger on public.platform_settings,public.platform_feature_flags,public.platform_integrations,public.subscription_plans,public.subscription_plan_modules,public.subscription_offers,public.subscription_offer_plans,public.subscription_billing_settings,public.business_subscriptions from anon,authenticated;
+commit;
