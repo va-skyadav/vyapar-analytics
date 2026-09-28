@@ -84,23 +84,25 @@ export default function Settings(){
  const saveFixedCeiling=async()=>{if(!fixedCeiling)return;if(!ceilingReason.trim()){setError("A reason is required to change the fixed-discount ceiling.");return}const value=Number(fixedCeiling.value);if(!Number.isFinite(value)||value<0){setError("Fixed-discount ceiling must be a valid non-negative number.");return}setSaving(fixedCeiling.id);setError("");const {data,error:e}=await supabase().rpc("admin_set_fixed_discount_ceiling",{p_value:value,p_reason:ceilingReason.trim()});if(e)setError(e.message);else{setSettings(x=>x.map(v=>v.key==="max_fixed_discount"?{...v,value:data?.value??value,updated_at:new Date().toISOString()}:v));setCeilingReason("");notifyAdminRefreshComplete()}setSaving(null)};
 
  const saveSetting=async(setting:Setting)=>{
-  setSaving(setting.id); setError("");
-  const {error:e}=await supabase().from("platform_settings").update({value:setting.value,updated_at:new Date().toISOString()}).eq("id",setting.id);
+  const reason=window.prompt("Save platform setting — enter the reason for this change.")?.trim()||"";if(!reason)return;
+  setSaving(setting.id);setError("");
+  const {error:e}=await supabase().rpc("admin_update_platform_setting",{p_id:setting.id,p_value:setting.value,p_reason:reason});
   if(e)setError(e.message);else notifyAdminRefreshComplete();
   setSaving(null);
  };
 
  const toggleFlag=async(flag:Flag)=>{
-  setSaving(flag.id);
-  const next=!flag.enabled;
-  const {error:e}=await supabase().from("platform_feature_flags").update({enabled:next,updated_at:new Date().toISOString()}).eq("id",flag.id);
+  const next=!flag.enabled;const reason=window.prompt("Change feature flag — enter the reason for this change.")?.trim()||"";if(!reason)return;
+  setSaving(flag.id);setError("");
+  const {error:e}=await supabase().rpc("admin_set_feature_flag",{p_id:flag.id,p_enabled:next,p_reason:reason});
   if(e)setError(e.message);else{setFlags(x=>x.map(v=>v.id===flag.id?{...v,enabled:next}:v));notifyAdminRefreshComplete();}
   setSaving(null);
  };
 
  const checkIntegration=async(item:Integration)=>{
-  setSaving(item.id);
-  const {error:e}=await supabase().from("platform_integrations").update({last_checked_at:new Date().toISOString()}).eq("id",item.id);
+  const reason=window.prompt("Check platform integration — enter the reason for this action.")?.trim()||"";if(!reason)return;
+  setSaving(item.id);setError("");
+  const {error:e}=await supabase().rpc("admin_touch_platform_integration",{p_id:item.id,p_reason:reason});
   if(e)setError(e.message);else{setIntegrations(x=>x.map(v=>v.id===item.id?{...v,last_checked_at:new Date().toISOString()}:v));notifyAdminRefreshComplete();}
   setSaving(null);
  };
