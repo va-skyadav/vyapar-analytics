@@ -41,6 +41,7 @@ export default function Organization(){
  const [newPassword,setNewPassword]=useState("");
  const [savingPassword,setSavingPassword]=useState(false);
  const [currentRoleCode,setCurrentRoleCode]=useState("");
+ const [warning,setWarning]=useState("");
 
  const load=useCallback(async(showLoading=true)=>{
   if(showLoading)setLoading(true);
@@ -101,10 +102,10 @@ export default function Organization(){
 
  const addUser=async()=>{
   if(!form.display_name.trim()||!form.email.trim()||!form.role_id){setError("Name, email and access role are required.");return;}
-  setSaving(true);setError("");
+  setSaving(true);setError("");setWarning("");
   const s=supabase();
   const {data,error:invokeError}=await s.functions.invoke("create-admin-user",{body:{display_name:form.display_name.trim(),email:form.email.trim(),role_id:form.role_id,department_id:form.department_id||null}});
-  if(invokeError||data?.error){setError(invokeError?.message||data?.error||"Unable to create administrator.");}
+  if(invokeError||data?.error){setError(invokeError?.message||data?.error||"Unable to create administrator."); if(data?.notification_status&&data.notification_status!=="sent")setWarning("Administrator account was not created because the invitation notification was not sent ("+data.notification_status+").");}
   else{resetForm();setShowAdd(false);await load(false);}
   setSaving(false);
  };
@@ -127,12 +128,12 @@ export default function Organization(){
   setSavingPassword(true);setError("");
   const {data,error}=await supabase().functions.invoke("admin-change-password",{body:{target_user_id:passwordAdmin.user_id,password:newPassword}});
   if(error||data?.error)setError(data?.error||error?.message||"Unable to change password.");
-  else{setPasswordAdmin(null);setNewPassword("");setError("Password changed successfully.");}
+  else{setPasswordAdmin(null);setNewPassword(""); if(data?.warning)setWarning(data.warning); else setError("Password changed successfully.");}
   setSavingPassword(false);
  };
 
  return <AdminShell active="/organization">
-  {error&&<div className={error==="Password changed successfully."?"notice":"notice errorNotice"}>{error}</div>}
+  {warning&&<div className="notice">{warning}</div>}{error&&<div className={error==="Password changed successfully."?"notice":"notice errorNotice"}>{error}</div>}
   {passwordAdmin&&<section className="card financePanel addAdminPanel roleEditorPanel">
    <div className="panelHeader"><div><div className="panelTitle">Change Administrator Password</div><div className="muted panelSubtitle">Direct password administration is available only to VA Super Admin and does not use the password-reset email workflow.</div></div><button className="secondaryButton" onClick={()=>{setPasswordAdmin(null);setNewPassword("")}}>Close</button></div>
    <div className="roleEditorHeader"><strong>{passwordAdmin.display_name}</strong><span className="muted">{passwordAdmin.email}</span></div>
