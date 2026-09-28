@@ -40,6 +40,7 @@ export default function Subscription(){
  const [planModules,setPlanModules]=useState<Record<string,Module>>({});
  const [search,setSearch]=useState("");
 
+ const requireReason=(label:string)=>{const reason=window.prompt(label+" — enter the reason for this change.");return reason?.trim()||""};
  const load=useCallback(async(showLoading=true)=>{
   if(showLoading)setLoading(true);
   setError("");
@@ -112,57 +113,75 @@ export default function Subscription(){
  const newPlan=()=>{setEditingPlan(null);setSelectedPlanId("");setPlanForm({...blankPlan});setPlanModules({});setTab("plans");};
 
  const savePlan=async()=>{
+  if(!planForm.code.trim()||!planForm.name.trim()){setError("Plan code and name are required.");return}
+  const reason=requireReason("Save subscription plan");if(!reason)return;
   const monthly=Number(planForm.monthly_price),annual=Number(planForm.annual_price);
-  if(!planForm.code.trim()||!planForm.name.trim()){setError("Plan code and name are required.");return;}
-  if(!Number.isFinite(monthly)||monthly<0||!Number.isFinite(annual)||annual<0){setError("Plan prices must be valid non-negative numbers.");return;}
-  let limits:any,features:any,overage_config:any;try{limits=JSON.parse(planForm.limits||"{}");features=JSON.parse(planForm.features||"{}");overage_config=JSON.parse(planForm.overage_config||"{}")}catch{setError("Plan limits, entitlements and overage rules must be valid JSON.");return;}
-  setSaving("plan");setError("");const s=supabase();
-  let planId=editingPlan?.id;
-  if(editingPlan){
-   const {error:e}=await s.from("subscription_plans").update({code:planForm.code.trim().toLowerCase(),name:planForm.name.trim(),monthly_price:monthly,annual_price:annual,currency_code:planForm.currency_code.trim().toUpperCase().slice(0,3),billing_model:planForm.billing_model,setup_fee:Number(planForm.setup_fee)||0,trial_days:Number(planForm.trial_days)||0,minimum_seats:Number(planForm.minimum_seats)||1,included_seats:Number(planForm.included_seats)||1,overage_enabled:planForm.overage_enabled,overage_config,is_featured:planForm.is_featured,public_visible:planForm.public_visible,display_order:Number(planForm.display_order)||0,is_active:planForm.is_active,description:planForm.description.trim(),limits,features}).eq("id",editingPlan.id);
-   if(e){setError(e.message);setSaving("");return}
-  }else{
-   const {data,error:e}=await s.from("subscription_plans").insert({code:planForm.code.trim().toLowerCase(),name:planForm.name.trim(),monthly_price:monthly,annual_price:annual,currency_code:planForm.currency_code.trim().toUpperCase().slice(0,3),billing_model:planForm.billing_model,setup_fee:Number(planForm.setup_fee)||0,trial_days:Number(planForm.trial_days)||0,minimum_seats:Number(planForm.minimum_seats)||1,included_seats:Number(planForm.included_seats)||1,overage_enabled:planForm.overage_enabled,overage_config,is_featured:planForm.is_featured,public_visible:planForm.public_visible,display_order:Number(planForm.display_order)||0,is_active:planForm.is_active,description:planForm.description.trim(),limits,features}).select("id").single();
-   if(e){setError(e.message);setSaving("");return} planId=data.id;
-  }
-  if(planId){
-   await s.from("subscription_plan_modules").delete().eq("plan_id",planId);
-   const rows=MODULES.map(([code,name])=>({plan_id:planId,module_code:code,module_name:name,enabled:Boolean(planModules[code]?.enabled),limit_value:planModules[code]?.limit_value??null,limit_unit:planModules[code]?.limit_unit||null,notes:planModules[code]?.notes||null}));
-   await s.from("subscription_plan_modules").insert(rows);
-  }
-    setSaving("");setEditingPlan(null);await load(false);
- };
+  if(!Number.isFinite(monthly)||monthly<0||!Number.isFinite(annual)||annual<0){setError("Plan prices must be valid non-negative numbers.");return}
+  let limits:any,features:any,overage_config:any;try{limits=JSON.parse(planForm.limits||"{}");features=JSON.parse(planForm.features||"{}");overage_config=JSON.parse(planForm.overage_config||"{}")}catch{setError("Plan limits, entitlements and overage rules must be valid JSON.");return}
+  setSaving("plan");setError("");
+  const payload={code:planForm.code.trim().toLowerCase(),name:planForm.name.trim(),monthly_price:monthly,annual_price:annual,currency_code:planForm.currency_code.trim().toUpperCase().slice(0,3),billing_model:planForm.billing_model,setup_fee:Number(planForm.setup_fee)||0,trial_days:Number(planForm.trial_days)||0,minimum_seats:Number(planForm.minimum_seats)||1,included_seats:Number(planForm.included_seats)||1,overage_enabled:Boolean(planForm.overage_enabled),overage_config,is_featured:Boolean(planForm.is_featured),public_visible:Boolean(planForm.public_visible),display_order:Number(planForm.display_order)||0,is_active:Boolean(planForm.is_active),description:planForm.description.trim(),limits,features};
+  const modules=MODULES.map(([code,name])=>({module_code:code,module_name:name,enabled:Boolean(planModules[code]?.enabled),limit_value:planModules[code]?.limit_value??null,limit_unit:planModules[code]?.limit_unit||null,notes:planModules[code]?.notes||null}));
+  const {data,error:e}=await supabase().rpc("admin_save_subscription_plan",{p_id:editingPlan?.id||null,p_payload:payload,p_modules:modules,p_reason:reason});
+  if(e){setError(e.message);setSaving("");return}
+  setSaving("");setEditingPlan(null);await load(false);
+};
+
 
  const editOffer=(o:Offer)=>{setOfferEditorOpen(true);setEditingOffer(o);setOfferForm({code:o.code,name:o.name,description:o.description||"",applicablePlans:offerPlanIds[o.id]||[],offer_type:o.offer_type,discount_type:o.discount_type,discount_value:String(o.discount_value??0),buy_quantity:String(o.buy_quantity??2),free_quantity:String(o.free_quantity??1),trial_days:String(o.trial_days??14),credit_amount:String(o.credit_amount??0),starts_at:o.starts_at?o.starts_at.slice(0,16):"",ends_at:o.ends_at?o.ends_at.slice(0,16):"",max_redemptions:o.max_redemptions?String(o.max_redemptions):"",max_redemptions_per_customer:String(o.max_redemptions_per_customer??1),first_time_only:o.first_time_only,auto_apply:o.auto_apply,stackable:o.stackable,is_active:o.is_active});};
  const newOffer=()=>{setEditingOffer(null);setOfferEditorOpen(true);setOfferForm({...blankOffer,applicablePlans:[]});};
 
  const saveOffer=async()=>{
   if(!offerForm.code.trim()||!offerForm.name.trim()){setError("Offer code and name are required.");return}
+  const reason=requireReason("Save subscription offer");if(!reason)return;
   setSaving("offer");setError("");
-  const payload={code:offerForm.code.trim().toUpperCase(),name:offerForm.name.trim(),description:offerForm.description.trim(),offer_type:offerForm.offer_type,discount_type:offerForm.discount_type,discount_value:Number(offerForm.discount_value)||0,buy_quantity:offerForm.offer_type==="buy_x_get_y"?Number(offerForm.buy_quantity)||null:null,free_quantity:offerForm.offer_type==="buy_x_get_y"?Number(offerForm.free_quantity)||null:null,trial_days:offerForm.offer_type==="free_trial"?Number(offerForm.trial_days)||0:null,credit_amount:offerForm.offer_type==="credit"?Number(offerForm.credit_amount)||0:null,starts_at:offerForm.starts_at||null,ends_at:offerForm.ends_at||null,max_redemptions:offerForm.max_redemptions?Number(offerForm.max_redemptions):null,max_redemptions_per_customer:Number(offerForm.max_redemptions_per_customer)||1,first_time_only:offerForm.first_time_only,auto_apply:offerForm.auto_apply,stackable:offerForm.stackable,is_active:offerForm.is_active};
-  const {data,error:e}=editingOffer?await supabase().from("subscription_offers").update(payload).eq("id",editingOffer.id).select("*").single():await supabase().from("subscription_offers").insert(payload).select("*").single();
+  const payload={code:offerForm.code.trim().toUpperCase(),name:offerForm.name.trim(),description:offerForm.description.trim(),offer_type:offerForm.offer_type,discount_type:offerForm.discount_type,discount_value:Number(offerForm.discount_value)||0,buy_quantity:offerForm.offer_type==="buy_x_get_y"?Number(offerForm.buy_quantity)||null:null,free_quantity:offerForm.offer_type==="buy_x_get_y"?Number(offerForm.free_quantity)||null:null,trial_days:offerForm.offer_type==="free_trial"?Number(offerForm.trial_days)||0:null,credit_amount:offerForm.offer_type==="credit"?Number(offerForm.credit_amount)||0:null,starts_at:offerForm.starts_at||null,ends_at:offerForm.ends_at||null,max_redemptions:offerForm.max_redemptions?Number(offerForm.max_redemptions):null,max_redemptions_per_customer:Number(offerForm.max_redemptions_per_customer)||1,first_time_only:Boolean(offerForm.first_time_only),auto_apply:Boolean(offerForm.auto_apply),stackable:Boolean(offerForm.stackable),is_active:Boolean(offerForm.is_active)};
+  const {data,error:e}=await supabase().rpc("admin_save_subscription_offer",{p_id:editingOffer?.id||null,p_payload:payload,p_plan_ids:offerForm.applicablePlans||[],p_reason:reason});
   if(e){setError(e.message);setSaving("");return}
-  const offerId=data?.id;
-  if(offerId){await supabase().from("subscription_offer_plans").delete().eq("offer_id",offerId);if((offerForm.applicablePlans||[]).length)await supabase().from("subscription_offer_plans").insert((offerForm.applicablePlans||[]).map((plan_id:string)=>({offer_id:offerId,plan_id})));}
-    setSaving("");setEditingOffer(null);setOfferEditorOpen(false);await load(false);
- };
+  setSaving("");setEditingOffer(null);setOfferEditorOpen(false);await load(false);
+};
 
- const saveCompany=async()=>{if(!company)return;setSaving("company");setError("");const {id,...payload}=company;const {error:e}=await supabase().from("billing_company_profile").update({...payload,updated_at:new Date().toISOString()}).eq("id",id);if(e)setError(e.message);else await audit("BILLING_COMPANY_PROFILE_UPDATED","billing_company_profile",id,null,payload);setSaving("");await load(false);};
+
+ const saveCompany=async()=>{
+  if(!company)return;
+  const reason=requireReason("Save company billing details");if(!reason)return;
+  setSaving("company");setError("");
+  const {id,...payload}=company;
+  const {error:e}=await supabase().rpc("admin_update_billing_company_profile",{p_id:id,p_payload:payload,p_reason:reason});
+  if(e)setError(e.message);setSaving("");await load(false);
+};
  const openPayment=(p:PaymentMethod)=>{setEditingPayment(p);setPaymentForm({...blankPayment,...p,account_number:"",gateway_secret:"",webhook_secret:""});};
  const newPayment=()=>{setEditingPayment(null);setPaymentForm({...blankPayment});};
- const savePayment=async()=>{if(!paymentForm.code.trim()||!paymentForm.display_name.trim()){setError("Payment method code and name are required.");return}if(paymentForm.method_type==="gateway"&&!paymentForm.provider.trim()){setError("Gateway provider is required.");return}setSaving("payment");setError("");const s=supabase();let av=editingPayment?.account_number_vault_id||null;let gv=editingPayment?.gateway_secret_vault_id||null;let wv=editingPayment?.webhook_secret_vault_id||null;for(const x of [{v:paymentForm.account_number,n:"account"},{v:paymentForm.gateway_secret,n:"gateway"},{v:paymentForm.webhook_secret,n:"webhook"}]){if(!x.v)continue;const {data,error:e}=await s.rpc("admin_save_billing_secret",{p_name:x.n+"_"+paymentForm.code.trim().toLowerCase(),p_secret:x.v,p_description:paymentForm.display_name.trim()+" "+x.n});if(e){setError(e.message);setSaving("");return}if(x.n==="account")av=data;if(x.n==="gateway")gv=data;if(x.n==="webhook")wv=data;}const payload={code:paymentForm.code.trim().toLowerCase(),display_name:paymentForm.display_name.trim(),method_type:paymentForm.method_type,provider:paymentForm.provider.trim()||null,is_active:Boolean(paymentForm.is_active),is_default:Boolean(paymentForm.is_default),beneficiary_name:paymentForm.beneficiary_name.trim()||null,bank_name:paymentForm.bank_name.trim()||null,ifsc_code:paymentForm.ifsc_code.trim().toUpperCase()||null,branch_name:paymentForm.branch_name.trim()||null,upi_id:paymentForm.upi_id.trim()||null,merchant_account_id:paymentForm.merchant_account_id.trim()||null,public_key:paymentForm.public_key.trim()||null,checkout_url:paymentForm.checkout_url.trim()||null,settlement_currency:paymentForm.settlement_currency.trim().toUpperCase().slice(0,3),instructions:paymentForm.instructions.trim()||null,account_number_last4:paymentForm.account_number.trim()?paymentForm.account_number.trim().slice(-4):editingPayment?.account_number_last4||null,account_number_vault_id:av,gateway_secret_vault_id:gv,webhook_secret_vault_id:wv};const q=editingPayment?s.from("billing_payment_methods").update({...payload,updated_at:new Date().toISOString()}).eq("id",editingPayment.id):s.from("billing_payment_methods").insert(payload);const {data,error:e}=await q.select("*").single();if(e){setError(e.message);setSaving("");return}if(payload.is_default)await s.from("billing_payment_methods").update({is_default:false}).neq("id",data.id);await audit(editingPayment?"BILLING_PAYMENT_METHOD_UPDATED":"BILLING_PAYMENT_METHOD_CREATED","billing_payment_methods",data.id,editingPayment,payload);setSaving("");setEditingPayment(null);setPaymentForm({...blankPayment});await load(false);};
+ const savePayment=async()=>{
+  if(!paymentForm.code.trim()||!paymentForm.display_name.trim()){setError("Payment method code and name are required.");return}
+  if(paymentForm.method_type==="gateway"&&!paymentForm.provider.trim()){setError("Gateway provider is required.");return}
+  const reason=requireReason(editingPayment?"Update payment method":"Create payment method");if(!reason)return;
+  setSaving("payment");setError("");
+  let av=editingPayment?.account_number_vault_id||null,gv=editingPayment?.gateway_secret_vault_id||null,wv=editingPayment?.webhook_secret_vault_id||null;
+  for(const x of [{v:paymentForm.account_number,n:"account"},{v:paymentForm.gateway_secret,n:"gateway"},{v:paymentForm.webhook_secret,n:"webhook"}]){
+    if(!x.v)continue;
+    const {data,error:e}=await supabase().rpc("admin_save_billing_secret",{p_name:x.n+"_"+paymentForm.code.trim().toLowerCase(),p_secret:x.v,p_description:paymentForm.display_name.trim()+" "+x.n});
+    if(e){setError(e.message);setSaving("");return}
+    if(x.n==="account")av=data;if(x.n==="gateway")gv=data;if(x.n==="webhook")wv=data;
+  }
+  const payload={code:paymentForm.code.trim().toLowerCase(),display_name:paymentForm.display_name.trim(),method_type:paymentForm.method_type,provider:paymentForm.provider.trim()||null,is_active:Boolean(paymentForm.is_active),is_default:Boolean(paymentForm.is_default),beneficiary_name:paymentForm.beneficiary_name.trim()||null,bank_name:paymentForm.bank_name.trim()||null,ifsc_code:paymentForm.ifsc_code.trim().toUpperCase()||null,branch_name:paymentForm.branch_name.trim()||null,upi_id:paymentForm.upi_id.trim()||null,merchant_account_id:paymentForm.merchant_account_id.trim()||null,public_key:paymentForm.public_key.trim()||null,checkout_url:paymentForm.checkout_url.trim()||null,settlement_currency:paymentForm.settlement_currency.trim().toUpperCase().slice(0,3),instructions:paymentForm.instructions.trim()||null,account_number_last4:paymentForm.account_number.trim()?paymentForm.account_number.trim().slice(-4):editingPayment?.account_number_last4||null,account_number_vault_id:av,gateway_secret_vault_id:gv,webhook_secret_vault_id:wv};
+  const {data,error:e}=await supabase().rpc("admin_upsert_payment_method",{p_id:editingPayment?.id||null,p_payload:payload,p_reason:reason});
+  if(e){setError(e.message);setSaving("");return}
+  setSaving("");setEditingPayment(null);setPaymentForm({...blankPayment});await load(false);
+};
  const saveBilling=async()=>{
-  if(!billing)return;setSaving("billing");setError("");
-  const {error:e}=await supabase().from("subscription_billing_settings").update({...billing,updated_at:new Date().toISOString()}).eq("id",billing.id);
-  if(e)setError(e.message);else   setSaving("");await load(false);
- };
-
+  if(!billing)return;
+  const reason=requireReason("Save billing rules");if(!reason)return;
+  setSaving("billing");setError("");
+  const {id,...payload}=billing;
+  const {error:e}=await supabase().rpc("admin_update_subscription_billing_settings",{p_id:id,p_payload:payload,p_reason:reason});
+  if(e)setError(e.message);setSaving("");await load(false);
+};
  const updateSubscription=async(id:string,patch:any)=>{
+  const reason=requireReason("Update customer subscription");if(!reason)return;
   setSaving("sub:"+id);setError("");
-  const old=subscriptions.find(x=>x.id===id);
-  const {error:e}=await supabase().from("business_subscriptions").update({...patch,updated_at:new Date().toISOString()}).eq("id",id);
-  if(e)setError(e.message);else   setSaving("");await load(false);
- };
+  const {error:e}=await supabase().rpc("admin_update_business_subscription",{p_id:id,p_patch:patch,p_reason:reason});
+  if(e)setError(e.message);setSaving("");await load(false);
+};
 
  const activePlans=plans.filter(p=>p.is_active).length;
  const activeOffers=offers.filter(o=>o.is_active).length;
