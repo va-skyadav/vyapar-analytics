@@ -39,7 +39,8 @@ export default function Organization(){
  const [savingRole,setSavingRole]=useState(false);
  const [passwordAdmin,setPasswordAdmin]=useState<Admin|null>(null);
  const [newPassword,setNewPassword]=useState("");
- const [savingPassword,setSavingPassword]=useState(false);\n const [currentRoleCode,setCurrentRoleCode]=useState("");
+ const [savingPassword,setSavingPassword]=useState(false);
+ const [currentRoleCode,setCurrentRoleCode]=useState("");
 
  const load=useCallback(async(showLoading=true)=>{
   if(showLoading)setLoading(true);
@@ -51,7 +52,8 @@ export default function Organization(){
    client.from("admin_departments").select("id,name,is_active").order("name"),
    client.rpc("get_admin_role_rights")
   ]);
-  const firstError=adminsRes.error||rolesRes.error||departmentsRes.error||rightsRes.error;\n  if(accessRes.data?.length) setCurrentRoleCode(accessRes.data[0].role_code||"");
+  const firstError=adminsRes.error||rolesRes.error||departmentsRes.error||rightsRes.error;
+  if(accessRes.data?.length) setCurrentRoleCode(accessRes.data[0].role_code||"");
   if(firstError){
    setError(firstError.message||"Unable to load organization data");
   }else{
@@ -106,7 +108,20 @@ export default function Organization(){
   setSaving(false);
  };
 
- const toggle=async(admin:Admin)=>{\n  if(admin.role?.code==="SUPER_ADMIN"){setError("SUPER_ADMIN is protected and cannot be suspended or activated.");return;}\n  const next=admin.status==="active"?"suspended":"active";\n  const reason=window.prompt("Reason (required):");\n  if(reason===null)return;\n  if(!reason.trim()){setError("A reason is required.");return;}\n  if(!window.confirm(next==="suspended"?"Suspend this administrator?":"Activate this administrator?"))return;\n  setBusyId(admin.id);setError("");\n  const {error}=await supabase().rpc("admin_set_admin_status",{p_admin_id:admin.id,p_status:next,p_reason:reason.trim()});\n  if(error)setError(error.message);else{setAdmins(items=>items.map(item=>item.id===admin.id?{...item,status:next}:item));notifyAdminRefreshComplete();}\n  setBusyId("");\n };\n\n const changePassword=async()=>{
+ const toggle=async(admin:Admin)=>{
+  if(admin.role?.code==="SUPER_ADMIN"){setError("SUPER_ADMIN is protected and cannot be suspended or activated.");return;}
+  const next=admin.status==="active"?"suspended":"active";
+  const reason=window.prompt("Reason (required):");
+  if(reason===null)return;
+  if(!reason.trim()){setError("A reason is required.");return;}
+  if(!window.confirm(next==="suspended"?"Suspend this administrator?":"Activate this administrator?"))return;
+  setBusyId(admin.id);setError("");
+  const {error}=await supabase().rpc("admin_set_admin_status",{p_admin_id:admin.id,p_status:next,p_reason:reason.trim()});
+  if(error)setError(error.message);else{setAdmins(items=>items.map(item=>item.id===admin.id?{...item,status:next}:item));notifyAdminRefreshComplete();}
+  setBusyId("");
+ };
+
+ const changePassword=async()=>{
   if(!passwordAdmin||newPassword.length<12){setError("Password must be at least 12 characters.");return;}
   setSavingPassword(true);setError("");
   const {data,error}=await supabase().functions.invoke("admin-change-password",{body:{target_user_id:passwordAdmin.user_id,password:newPassword}});
