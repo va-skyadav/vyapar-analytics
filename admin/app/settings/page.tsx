@@ -77,42 +77,7 @@ export default function Settings(){
  const maintenance=Boolean(settings.find(s=>s.key==="maintenance_mode")?.value);
  const filteredSettings=useMemo(()=>settings.filter(s=>settingLabel(s.key).toLowerCase().includes(query.toLowerCase())||s.key.toLowerCase().includes(query.toLowerCase())),[settings,query]);
 
- const adminAudit=async(action:string,entity_type:string,entity_id:string|null=null,old_data:any=null,new_data:any=null)=>{
-  const s=supabase();
-  const {data:userData}=await s.auth.getUser();
-  if(!userData.user)return;
-  const {data:admin}=await s.from("admin_users").select("id").eq("user_id",userData.user.id).maybeSingle();
-  if(admin?.id) await s.from("admin_audit_logs").insert({admin_user_id:admin.id,action,entity_type,entity_id,old_data,new_data});
- };
-
- const saveSetting=async(setting:Setting)=>{
-  setSaving(setting.id); setError("");
-  const old=setting.value;
-  const {data:userData}=await supabase().auth.getUser();
-  const {data:admin}=userData.user?await supabase().from("admin_users").select("id").eq("user_id",userData.user.id).maybeSingle():{data:null};
-  const payload:any={value:setting.value,updated_at:new Date().toISOString()};
-  if(admin?.id)payload.updated_by=admin.id;
-  const {error:e}=await supabase().from("platform_settings").update(payload).eq("id",setting.id);
-  if(e)setError(e.message);else await adminAudit("PLATFORM_SETTING_UPDATED","platform_settings",setting.id,old,setting.value);
-  setSaving(null); if(!e)notifyAdminRefreshComplete();
- };
-
- const toggleFlag=async(flag:Flag)=>{
-  setSaving(flag.id);
-  const next=!flag.enabled;
-  const {error:e}=await supabase().from("platform_feature_flags").update({enabled:next,updated_at:new Date().toISOString()}).eq("id",flag.id);
-  if(e)setError(e.message);else{setFlags(x=>x.map(v=>v.id===flag.id?{...v,enabled:next}:v));await adminAudit(next?"FEATURE_ENABLED":"FEATURE_DISABLED","platform_feature_flags",flag.id,{enabled:flag.enabled},{enabled:next});}
-  setSaving(null);
- };
-
- const checkIntegration=async(item:Integration)=>{
-  setSaving(item.id);
-  const {error:e}=await supabase().from("platform_integrations").update({last_checked_at:new Date().toISOString()}).eq("id",item.id);
-  if(e)setError(e.message);else{setIntegrations(x=>x.map(v=>v.id===item.id?{...v,last_checked_at:new Date().toISOString()}:v));await adminAudit("INTEGRATION_CHECKED","platform_integrations",item.id);}
-  setSaving(null);
- };
-
- const updateSettingValue=(id:string,value:any)=>setSettings(x=>x.map(v=>v.id===id?{...v,value}:v));
+ const saveSetting=async(setting:Setting)=>{\n  setSaving(setting.id); setError("");\n  const {error:e}=await supabase().from("platform_settings").update({value:setting.value,updated_at:new Date().toISOString()}).eq("id",setting.id);\n  if(e)setError(e.message);else notifyAdminRefreshComplete();\n  setSaving(null);\n };\n\n const toggleFlag=async(flag:Flag)=>{\n  setSaving(flag.id);\n  const next=!flag.enabled;\n  const {error:e}=await supabase().from("platform_feature_flags").update({enabled:next,updated_at:new Date().toISOString()}).eq("id",flag.id);\n  if(e)setError(e.message);else{setFlags(x=>x.map(v=>v.id===flag.id?{...v,enabled:next}:v));notifyAdminRefreshComplete();}\n  setSaving(null);\n };\n\n const checkIntegration=async(item:Integration)=>{\n  setSaving(item.id);\n  const {error:e}=await supabase().from("platform_integrations").update({last_checked_at:new Date().toISOString()}).eq("id",item.id);\n  if(e)setError(e.message);else{setIntegrations(x=>x.map(v=>v.id===item.id?{...v,last_checked_at:new Date().toISOString()}:v));notifyAdminRefreshComplete();}\n  setSaving(null);\n };\n\n const updateSettingValue=(id:string,value:any)=>setSettings(x=>x.map(v=>v.id===id?{...v,value}:v));
 
  return <AdminShell active="/settings">
   {error&&<div className="notice errorNotice">{error}</div>}
