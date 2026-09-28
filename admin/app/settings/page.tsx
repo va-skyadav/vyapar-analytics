@@ -79,7 +79,7 @@ export default function Settings(){
  const activeFlags=flags.filter(f=>f.enabled).length;
  const healthyIntegrations=integrations.filter(i=>i.status==="connected").length;
  const maintenance=Boolean(settings.find(s=>s.key==="maintenance_mode")?.value);
- const filteredSettings=useMemo(()=>settings.filter(s=>settingLabel(s.key).toLowerCase().includes(query.toLowerCase())||s.key.toLowerCase().includes(query.toLowerCase())),[settings,query]);
+ const filteredSettings=useMemo(()=>settings.filter(s=>s.key!=="max_fixed_discount"&&(settingLabel(s.key).toLowerCase().includes(query.toLowerCase())||s.key.toLowerCase().includes(query.toLowerCase()))),[settings,query]);
  const fixedCeiling=settings.find(s=>s.key==="max_fixed_discount");
  const saveFixedCeiling=async()=>{if(!fixedCeiling)return;if(!ceilingReason.trim()){setError("A reason is required to change the fixed-discount ceiling.");return}const value=Number(fixedCeiling.value);if(!Number.isFinite(value)||value<0){setError("Fixed-discount ceiling must be a valid non-negative number.");return}setSaving(fixedCeiling.id);setError("");const {data,error:e}=await supabase().rpc("admin_set_fixed_discount_ceiling",{p_value:value,p_reason:ceilingReason.trim()});if(e)setError(e.message);else{setSettings(x=>x.map(v=>v.key==="max_fixed_discount"?{...v,value:data?.value??value,updated_at:new Date().toISOString()}:v));setCeilingReason("");notifyAdminRefreshComplete()}setSaving(null)};
 
