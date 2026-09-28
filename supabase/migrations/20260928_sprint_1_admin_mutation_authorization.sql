@@ -1,0 +1,2 @@
+-- Sprint 1: admin creation requires organization.manage; role-rights mutation is SUPER_ADMIN-only; password-change audit RPC is service_role-only and requires explicit actor_user_id.
+-- Production applied.
